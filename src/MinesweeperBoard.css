@@ -1,0 +1,23 @@
+.board__row {
+    display: flex;
+}
+
+.board__row__cell {
+    width: 1.2em;
+    height: 1.2em;
+    margin: 0.06em;
+    border: 0.12em #999 outset;
+    background-color: #bbb;
+    font-weight: bolder;
+    text-align: center;
+}
+
+.board__row__cell--closed {
+    border-color: #282c34;
+    background-color: #333a49;
+    cursor: pointer;
+}
+
+.board__row__cell--closed:hover {
+    background-color: #3b4762;
+}

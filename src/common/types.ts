@@ -20,7 +20,8 @@ export type GameStatus = "waiting" | "playing" | "won" | "lost";
 
 export interface GameBoard {
   cells: GameCell[][];
-  numMinesLeft: number;
+  numFlagsLeft: number;
+  numTotalMines: number;
   status: GameStatus;
 }
 

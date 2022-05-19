@@ -18,11 +18,11 @@ export const fillBoardAfterFirstClick = ({
       )
     )
     .reduce((a, b) => [...a, ...b], []);
-  if (board.numMinesLeft > candidateCells.length) {
+  if (board.numFlagsLeft > candidateCells.length) {
     throw new Error("The board is too small for this number of mines");
   }
 
-  for (let i = 0; i < board.numMinesLeft; i++) {
+  for (let i = 0; i < board.numFlagsLeft; i++) {
     const minedCellIndex = getRandomInteger(0, candidateCells.length);
     const minedCell = candidateCells[minedCellIndex];
     candidateCells.splice(minedCellIndex, 1);
@@ -36,6 +36,21 @@ export const fillBoardAfterFirstClick = ({
   board.status = "playing";
 
   openCell({ board, cell: clickedCell });
+};
+
+export const clearNeighbors = ({
+  board,
+  cell,
+}: {
+  board: GameBoard;
+  cell: GameCell;
+}): void => {
+  if (cell.status !== "marked" && cell.status !== "open") {
+    return;
+  }
+  getCellNeighbors({ board, cell }).forEach((neighbor) =>
+    openCell({ board, cell: neighbor })
+  );
 };
 
 export const openCell = ({
@@ -54,9 +69,7 @@ export const openCell = ({
   } else {
     cell.status = "open";
     if (cell.numNeighborsWithMines === 0) {
-      getCellNeighbors({ board, cell }).forEach((neighbor) =>
-        openCell({ board, cell: neighbor })
-      );
+      clearNeighbors({ board, cell });
     }
   }
 };
@@ -64,21 +77,24 @@ export const openCell = ({
 export const toggleCellMark = ({
   board,
   cell,
-  onNoMinesLeft,
 }: {
   board: GameBoard;
   cell: GameCell;
-  onNoMinesLeft: () => void;
-}): void => {
-  if (board.numMinesLeft === 0) {
-    onNoMinesLeft();
-    return;
+}): { triedMarkingTooManyCells: boolean } => {
+  if (board.status !== "playing") {
+    return { triedMarkingTooManyCells: false };
   }
-  if (cell.status === "open") {
-    cell.status = "marked";
-    board.numMinesLeft--;
+  if (cell.status === "closed") {
+    if (board.numFlagsLeft === 0) {
+      return { triedMarkingTooManyCells: true };
+    } else {
+      cell.status = "marked";
+      board.numFlagsLeft--;
+      return { triedMarkingTooManyCells: false };
+    }
   } else if (cell.status === "marked") {
-    cell.status = "open";
-    board.numMinesLeft++;
+    cell.status = "closed";
+    board.numFlagsLeft++;
   }
+  return { triedMarkingTooManyCells: false };
 };

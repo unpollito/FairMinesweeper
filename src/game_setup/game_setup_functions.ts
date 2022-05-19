@@ -11,6 +11,7 @@ export const generateEmptyBoard = (difficulty: GameDifficulty): GameBoard => ({
       status: "closed",
     }))
   ),
-  numMinesLeft: GAME_MODES[difficulty].numMines,
+  numFlagsLeft: GAME_MODES[difficulty].numMines,
+  numTotalMines: GAME_MODES[difficulty].numMines,
   status: "waiting",
 });
