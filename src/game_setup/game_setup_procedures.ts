@@ -34,6 +34,8 @@ export const fillBoardAfterFirstClick = ({
   }
 
   board.status = "playing";
+
+  openCell({ board, cell: clickedCell });
 };
 
 export const openCell = ({
