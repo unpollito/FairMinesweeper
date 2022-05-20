@@ -6,8 +6,9 @@ import {
 } from "../common/types";
 import { GAME_MODES } from "./game_setup_constants";
 import { getRandomInteger } from "../common/random_util_functions";
-import { cloneCells, getCellNeighbors } from "../common/board_util_functions";
+import { cloneCells } from "../common/board_cloning_functions";
 import { openCell } from "../game_rules/game_rules_functions";
+import { getCellNeighbors } from "../common/cell_neighbor_functions";
 
 export const generateEmptyBoard = (difficulty: GameDifficulty): GameBoard => ({
   cells: [...Array(GAME_MODES[difficulty].height).keys()].map((_, row) =>

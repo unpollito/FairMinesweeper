@@ -1,4 +1,4 @@
-import { GameBoard, GameCell } from "./types";
+import { GameCell } from "./types";
 
 export const cloneCells = (cells: GameCell[][]): GameCell[][] =>
   cells.map((row) => row.map((cell) => ({ ...cell })));
@@ -35,21 +35,3 @@ export const cloneCellsAround = ({
       });
     }
   });
-
-export const getCellNeighbors = ({
-  board,
-  cell: { columnIndex, rowIndex },
-}: {
-  board: GameBoard;
-  cell: GameCell;
-}): GameCell[] =>
-  [
-    board.cells[rowIndex - 1]?.[columnIndex - 1],
-    board.cells[rowIndex - 1]?.[columnIndex],
-    board.cells[rowIndex - 1]?.[columnIndex + 1],
-    board.cells[rowIndex][columnIndex - 1],
-    board.cells[rowIndex][columnIndex + 1],
-    board.cells[rowIndex + 1]?.[columnIndex - 1],
-    board.cells[rowIndex + 1]?.[columnIndex],
-    board.cells[rowIndex + 1]?.[columnIndex + 1],
-  ].filter((cell) => !!cell);

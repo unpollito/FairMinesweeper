@@ -4,10 +4,8 @@ import {
   GameBoard,
   GameCell,
 } from "../common/types";
-import {
-  cloneCellsAround,
-  getCellNeighbors,
-} from "../common/board_util_functions";
+import { cloneCellsAround } from "../common/board_cloning_functions";
+import { getCellNeighbors } from "../common/cell_neighbor_functions";
 
 export const openCell = ({
   board: oldBoard,
