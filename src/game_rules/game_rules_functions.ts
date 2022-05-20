@@ -29,7 +29,6 @@ export const openCell = ({
     newCell.status = "exploded";
     newStatus = "lost";
   } else {
-    console.trace();
     newBoard.numOpenedCells++;
     newCell.status = "open";
     if (newCell.numNeighborsWithMines === 0) {
