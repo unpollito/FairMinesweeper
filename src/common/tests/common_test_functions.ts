@@ -1,6 +1,6 @@
-import { GameBoard } from "./types";
+import { GameBoard } from "../types";
 
-export const generateExampleBoard = (
+export const generateSampleBoardForTests = (
   height: number,
   width: number
 ): GameBoard => ({

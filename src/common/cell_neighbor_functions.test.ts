@@ -1,9 +1,9 @@
 import { GameBoard, GameCell } from "./types";
 import { getCellNeighbors } from "./cell_neighbor_functions";
-import { generateExampleBoard } from "./common_test_functions";
+import { generateSampleBoardForTests } from "./tests/common_test_functions";
 
 describe("getCellNeighbors", () => {
-  const board: GameBoard = generateExampleBoard(4, 4);
+  const board: GameBoard = generateSampleBoardForTests(4, 4);
 
   const expectArraysToContainSameCells = (
     a: GameCell[],

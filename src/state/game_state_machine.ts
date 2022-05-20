@@ -5,9 +5,9 @@ import {
   GameStateMachineState,
 } from "./game_state_machine_types";
 import {
-  fillBoardAfterFirstClick,
   generateEmptyBoard,
-} from "../game_setup/game_setup_functions";
+  handleFirstClick,
+} from "../game_setup/game_start_functions";
 import {
   clearNeighbors,
   openCell,
@@ -152,7 +152,7 @@ export const gameStateMachine = createMachine<
           throw new Error("invoked handleFirstClick with wrong event type");
         }
         return Promise.resolve(
-          fillBoardAfterFirstClick({ board: context, cell: event.cell })
+          handleFirstClick({ board: context, cell: event.cell })
         );
       },
     },

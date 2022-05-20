@@ -1,8 +1,6 @@
-import { generateEmptyBoard } from "./game_setup_functions";
 import { GameBoard, GameCell, GameDifficulty } from "../common/types";
+import { generateEmptyBoard } from "./board_generation_functions";
 import { GAME_MODES } from "./game_setup_constants";
-
-jest.mock("../common/random_util_functions");
 
 describe("generateEmptyBoard", () => {
   (["easy", "medium", "hard"] as GameDifficulty[]).forEach((difficulty) => {

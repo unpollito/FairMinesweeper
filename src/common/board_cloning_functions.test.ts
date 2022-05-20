@@ -1,9 +1,9 @@
 import { cloneCells, cloneCellsAround } from "./board_cloning_functions";
-import { generateExampleBoard } from "./common_test_functions";
+import { generateSampleBoardForTests } from "./tests/common_test_functions";
 import { GameBoard, GameCell } from "./types";
 
 describe("cloneCells", () => {
-  const board = generateExampleBoard(4, 4);
+  const board = generateSampleBoardForTests(4, 4);
   board.cells[0][0].hasMine = true;
   board.cells[0][1].numNeighborsWithMines = 1;
   board.cells[1][0].numNeighborsWithMines = 1;
@@ -87,43 +87,43 @@ describe("cloneCellsAround", () => {
   };
 
   describe("with radius = 0", () => {
-    const board = generateExampleBoard(4, 4);
+    const board = generateSampleBoardForTests(4, 4);
     const around = board.cells[1][1];
     testForRadius({ around, board, radius: 0 });
   });
 
   describe("with radius = 1 in the center", () => {
-    const board = generateExampleBoard(5, 5);
+    const board = generateSampleBoardForTests(5, 5);
     const around = board.cells[2][2];
     testForRadius({ around, board, radius: 1 });
   });
 
   describe("with radius = 1 in the top left corner", () => {
-    const board = generateExampleBoard(5, 5);
+    const board = generateSampleBoardForTests(5, 5);
     const around = board.cells[0][0];
     testForRadius({ around, board, radius: 1 });
   });
 
   describe("with radius = 1 in the bottom right corner", () => {
-    const board = generateExampleBoard(5, 5);
+    const board = generateSampleBoardForTests(5, 5);
     const around = board.cells[4][4];
     testForRadius({ around, board, radius: 1 });
   });
 
   describe("with radius = 2 in the center", () => {
-    const board = generateExampleBoard(7, 7);
+    const board = generateSampleBoardForTests(7, 7);
     const around = board.cells[3][3];
     testForRadius({ around, board, radius: 2 });
   });
 
   describe("with radius = 2 in the top right corner", () => {
-    const board = generateExampleBoard(7, 7);
+    const board = generateSampleBoardForTests(7, 7);
     const around = board.cells[0][6];
     testForRadius({ around, board, radius: 2 });
   });
 
   describe("with radius = 2 in the bottom left corner", () => {
-    const board = generateExampleBoard(7, 7);
+    const board = generateSampleBoardForTests(7, 7);
     const around = board.cells[6][0];
     testForRadius({ around, board, radius: 2 });
   });
