@@ -97,7 +97,7 @@ export const toggleCellMark = ({
     newCell.status = "marked";
     newBoard.numFlagsLeft--;
   } else if (newCell.status === "marked") {
-    newCell.status = "open";
+    newCell.status = "closed";
     newBoard.numFlagsLeft++;
   }
   return { board: newBoard, triedMarkingTooManyCells: false };
