@@ -1,13 +1,19 @@
 import { GameBoard, GameCell, GameDifficulty } from "../common/types";
 
-export interface GameStateMachineContext {
-  board?: GameBoard;
+export interface GameStateMachineContext extends Omit<GameBoard, "status"> {
   triedMarkingTooManyCells: boolean;
 }
 
 export interface GameStateMachineState {
   context: GameStateMachineContext;
-  value: "idle" | "playing" | "handlingClick" | "won" | "lost";
+  value:
+    | "idle"
+    | "beforeFirstClick"
+    | "handlingFirstClick"
+    | "playing"
+    | "handlingChange"
+    | "won"
+    | "lost";
 }
 
 export type GameStateMachineEvent =

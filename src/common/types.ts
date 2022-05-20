@@ -21,12 +21,15 @@ export type GameStatus = "waiting" | "playing" | "won" | "lost";
 export interface GameBoard {
   cells: GameCell[][];
   numFlagsLeft: number;
+  numOpenedCells: number;
   numTotalMines: number;
+}
+
+export interface BoardAndCellAndStatus {
+  board: GameBoard;
+  cell: GameCell;
   status: GameStatus;
 }
 
-export interface BoardAndPosition {
-  board: GameBoard;
-  columnIndex: number;
-  rowIndex: number;
-}
+export type BoardAndCell = Pick<BoardAndCellAndStatus, "board" | "cell">;
+export type BoardAndStatus = Pick<BoardAndCellAndStatus, "board" | "status">;

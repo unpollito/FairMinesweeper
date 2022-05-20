@@ -7,8 +7,6 @@ import { MinesweeperBoard } from "./MinesweeperBoard";
 
 export const Minesweeper = (): React.ReactElement => {
   const [state, send] = useMachine(gameStateMachine);
-  const board = state.context.board;
-
   console.log(state);
 
   return (
@@ -16,8 +14,8 @@ export const Minesweeper = (): React.ReactElement => {
       <h1 className={"minesweeper__title"}>react-minesweeper</h1>
       <div className={"minesweeper__game"}>
         {state.matches("idle") ||
-        board?.status === "won" ||
-        board?.status === "lost" ? (
+        state.matches("won") ||
+        state.matches("lost") ? (
           <div
             className={`minesweeper__game__menu ${
               state.matches("idle")
@@ -28,7 +26,7 @@ export const Minesweeper = (): React.ReactElement => {
             <h2 className={"minesweeper__game__menu__title"}>
               {state.matches("idle")
                 ? "Difficulty"
-                : board?.status === "won"
+                : state.matches("won")
                 ? "You won! Replay?"
                 : "You lost! Replay?"}
             </h2>
@@ -46,14 +44,14 @@ export const Minesweeper = (): React.ReactElement => {
             )}
           </div>
         ) : undefined}
-        {board && state.matches("playing") ? (
+        {state.matches("idle") ? undefined : (
           <MinesweeperBoard
-            board={board}
+            board={state.context}
             onLeftClick={(cell) => send({ cell, type: "CLICK" })}
             onMiddleClick={(cell) => send({ cell, type: "CLEAR_NEIGHBORS" })}
             onRightClick={(cell) => send({ cell, type: "MARK" })}
           />
-        ) : undefined}
+        )}
       </div>
     </div>
   );
