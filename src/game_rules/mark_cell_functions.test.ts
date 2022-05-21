@@ -1,63 +1,8 @@
 import { GameBoard, GameCell } from "../common/types";
 import { toggleCellMark } from "./mark_cell_functions";
+import { generate000_x1xBoardForTests } from "../common/tests/common_test_functions";
 
-const initialBoard: GameBoard = {
-  // 2x3 board with mines in [1,0] and [1,2].
-  cells: [
-    [
-      {
-        columnIndex: 0,
-        hasMine: false,
-        numNeighborsWithMines: 1,
-        rowIndex: 0,
-        status: "closed",
-      },
-      {
-        columnIndex: 1,
-        hasMine: false,
-        numNeighborsWithMines: 2,
-        rowIndex: 0,
-        status: "closed",
-      },
-      {
-        columnIndex: 2,
-        hasMine: false,
-        numNeighborsWithMines: 1,
-        rowIndex: 0,
-        status: "closed",
-      },
-    ],
-    [
-      {
-        columnIndex: 0,
-        hasMine: true,
-        numNeighborsWithMines: 0,
-        rowIndex: 1,
-        status: "closed",
-      },
-      {
-        columnIndex: 1,
-        hasMine: false,
-        numNeighborsWithMines: 2,
-        rowIndex: 0,
-        status: "closed",
-      },
-      {
-        columnIndex: 2,
-        hasMine: true,
-        numNeighborsWithMines: 0,
-        rowIndex: 1,
-        status: "closed",
-      },
-    ],
-  ],
-  numFlagsLeft: 2,
-  numOpenedCells: 0,
-  numTotalMines: 2,
-};
-
-const getClonedInitialBoard = (): GameBoard =>
-  JSON.parse(JSON.stringify(initialBoard));
+const initialBoard = generate000_x1xBoardForTests();
 
 describe("toggleCellMark", () => {
   const runInvariantTests = ({
@@ -165,7 +110,7 @@ describe("toggleCellMark", () => {
   });
 
   describe("marking cell without a mine using the last flag", () => {
-    const board: GameBoard = getClonedInitialBoard();
+    const board: GameBoard = generate000_x1xBoardForTests();
     board.cells[0][0].status = "marked";
     board.numFlagsLeft = 1;
     runTestsForMarkingACell({
@@ -175,7 +120,7 @@ describe("toggleCellMark", () => {
   });
 
   describe("marking cell with a mine using the last flag", () => {
-    const board: GameBoard = getClonedInitialBoard();
+    const board: GameBoard = generate000_x1xBoardForTests();
     board.cells[0][0].status = "marked";
     board.numFlagsLeft = 1;
     runTestsForMarkingACell({
@@ -208,7 +153,7 @@ describe("toggleCellMark", () => {
   };
 
   describe("unmark first flag on an unmined cell", () => {
-    const board: GameBoard = getClonedInitialBoard();
+    const board: GameBoard = generate000_x1xBoardForTests();
     board.cells[0][0].status = "marked";
     board.numFlagsLeft = 1;
     runTestsForUnmarkingACell({
@@ -218,7 +163,7 @@ describe("toggleCellMark", () => {
   });
 
   describe("unmark first flag on a mined cell", () => {
-    const board: GameBoard = getClonedInitialBoard();
+    const board: GameBoard = generate000_x1xBoardForTests();
     board.cells[1][0].status = "marked";
     board.numFlagsLeft = 1;
     runTestsForUnmarkingACell({
@@ -228,7 +173,7 @@ describe("toggleCellMark", () => {
   });
 
   describe("unmark last flag on an unmined cell", () => {
-    const board: GameBoard = getClonedInitialBoard();
+    const board: GameBoard = generate000_x1xBoardForTests();
     board.cells[0][0].status = "marked";
     board.cells[0][1].status = "marked";
     board.numFlagsLeft = 0;
@@ -239,7 +184,7 @@ describe("toggleCellMark", () => {
   });
 
   describe("unmark last flag on a mined cell", () => {
-    const board: GameBoard = getClonedInitialBoard();
+    const board: GameBoard = generate000_x1xBoardForTests();
     board.cells[0][0].status = "marked";
     board.cells[1][0].status = "marked";
     board.numFlagsLeft = 0;
@@ -279,7 +224,7 @@ describe("toggleCellMark", () => {
   };
 
   describe("trying to mark unmined cell when there are no flags left", () => {
-    const board: GameBoard = getClonedInitialBoard();
+    const board: GameBoard = generate000_x1xBoardForTests();
     board.cells[0][0].status = "marked";
     board.cells[1][0].status = "marked";
     board.numFlagsLeft = 0;
@@ -291,7 +236,7 @@ describe("toggleCellMark", () => {
   });
 
   describe("trying to mark mined cell when there are no flags left", () => {
-    const board: GameBoard = getClonedInitialBoard();
+    const board: GameBoard = generate000_x1xBoardForTests();
     board.cells[0][0].status = "marked";
     board.cells[1][0].status = "marked";
     board.numFlagsLeft = 0;
@@ -303,7 +248,7 @@ describe("toggleCellMark", () => {
   });
 
   describe("trying to mark open cell", () => {
-    const board: GameBoard = getClonedInitialBoard();
+    const board: GameBoard = generate000_x1xBoardForTests();
     board.cells[0][0].status = "open";
     board.numOpenedCells = 1;
     runTestsForNoExpectedChange({

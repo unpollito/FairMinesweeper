@@ -2,6 +2,7 @@ import {
   BoardAndCellAndStatus,
   BoardAndStatus,
   GameBoard,
+  GameStatus,
 } from "../common/types";
 import { cloneCellsAround } from "../common/board_cloning_functions";
 import { getCellNeighbors } from "../common/cell_neighbor_functions";
@@ -11,7 +12,11 @@ export const openCell = ({
   cell: oldCell,
   status: oldStatus,
 }: BoardAndCellAndStatus): BoardAndStatus => {
-  if (oldCell.status !== "closed") {
+  if (
+    oldCell.status !== "closed" ||
+    oldStatus === "won" ||
+    oldStatus === "lost"
+  ) {
     return { board: oldBoard, status: oldStatus };
   }
   const newCells = cloneCellsAround({
@@ -21,7 +26,7 @@ export const openCell = ({
   });
   const newCell = newCells[oldCell.rowIndex][oldCell.columnIndex];
   let newBoard = { ...oldBoard, cells: newCells };
-  let newStatus = oldStatus;
+  let newStatus: GameStatus = oldStatus;
   if (newCell.hasMine) {
     newCell.status = "exploded";
     newStatus = "lost";

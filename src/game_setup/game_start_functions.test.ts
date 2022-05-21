@@ -1,7 +1,7 @@
 import { fillBoardAfterFirstClick } from "./board_filling_functions";
 import { handleFirstClick } from "./game_start_functions";
 import { BoardAndStatus } from "../common/types";
-import { generateSampleBoardForTests } from "../common/tests/common_test_functions";
+import { generateEmptyBoardForTests } from "../common/tests/common_test_functions";
 import { openCell } from "../game_rules/open_cell_functions";
 
 jest.mock("../game_rules/open_cell_functions");
@@ -57,7 +57,7 @@ describe("handleFirstClick", () => {
   beforeEach(() => jest.clearAllMocks());
 
   it("does not modify the passed board", () => {
-    const board = generateSampleBoardForTests(5, 5);
+    const board = generateEmptyBoardForTests(5, 5);
     const clonedBoard = JSON.parse(JSON.stringify(board));
     handleFirstClick({
       board,
@@ -67,7 +67,7 @@ describe("handleFirstClick", () => {
   });
 
   it("calls fillBoardAfterFirstClick with the passed board and cell", () => {
-    const board = generateSampleBoardForTests(5, 5);
+    const board = generateEmptyBoardForTests(5, 5);
     handleFirstClick({
       board,
       cell: board.cells[0][0],
@@ -84,7 +84,7 @@ describe("handleFirstClick", () => {
     "calls openCell with the result of fillBoardAfterFirstClick " +
       "and the result cell with the same position and the original",
     () => {
-      const board = generateSampleBoardForTests(5, 5);
+      const board = generateEmptyBoardForTests(5, 5);
       handleFirstClick({
         board,
         cell: board.cells[0][0],
@@ -99,7 +99,7 @@ describe("handleFirstClick", () => {
   );
 
   it("returns the result of openCell", () => {
-    const board = generateSampleBoardForTests(5, 5);
+    const board = generateEmptyBoardForTests(5, 5);
     const result = handleFirstClick({
       board,
       cell: board.cells[0][0],
