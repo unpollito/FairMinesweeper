@@ -4,14 +4,12 @@ import {
   GameStateMachineEvent,
   GameStateMachineState,
 } from "./game_state_machine_types";
-import {
-  generateEmptyBoard,
-  handleFirstClick,
-} from "../game_setup/game_start_functions";
+import { handleFirstClick } from "../game_setup/game_start_functions";
 import { openCell } from "../game_rules/open_single_cell_functions";
 import { BoardAndStatus } from "../common/types";
 import { toggleCellMark } from "../game_rules/mark_cell_functions";
 import { clearNeighbors } from "../game_rules/open_neighbors_functions";
+import { generateEmptyBoard } from "../game_setup/board_generation_functions";
 
 export const assignBoardAfterChange: AssignAction<
   GameStateMachineContext,

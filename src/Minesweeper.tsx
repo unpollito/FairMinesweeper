@@ -7,7 +7,6 @@ import { MinesweeperBoard } from "./MinesweeperBoard";
 
 export const Minesweeper = (): React.ReactElement => {
   const [state, send] = useMachine(gameStateMachine);
-  console.log(state);
 
   return (
     <div className={"minesweeper"}>
