@@ -1,12 +1,36 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "./Minesweeper.css";
 import { gameStateMachine } from "./state/game_state_machine";
 import { useMachine } from "@xstate/react";
 import { GameDifficulty } from "./common/types";
 import { MinesweeperBoard } from "./MinesweeperBoard";
+import { secondsToFormattedString } from "./time/time_functions";
 
 export const Minesweeper = (): React.ReactElement => {
   const [state, send] = useMachine(gameStateMachine);
+  const [gameTimeInSeconds, setGameTimeInSeconds] = useState(0);
+  const timeIntervalHandle = useRef<number | undefined>(undefined);
+
+  useEffect(() => {
+    if (
+      state.context.startTime &&
+      !timeIntervalHandle.current &&
+      !state.context.endTime
+    ) {
+      setGameTimeInSeconds(0);
+      timeIntervalHandle.current = window.setInterval(() => {
+        setGameTimeInSeconds(
+          Math.floor((Date.now() - (state.context?.startTime ?? 0)) / 1000)
+        );
+      }, 1000);
+    } else if (
+      (state.context.startTime && state.context.endTime) ||
+      !state.context.startTime
+    ) {
+      window.clearInterval(timeIntervalHandle.current);
+      timeIntervalHandle.current = undefined;
+    }
+  }, [state.context.startTime, state.context.endTime]);
 
   return (
     <div className={"minesweeper"}>
@@ -44,12 +68,28 @@ export const Minesweeper = (): React.ReactElement => {
           </div>
         ) : undefined}
         {state.matches("idle") ? undefined : (
-          <MinesweeperBoard
-            board={state.context}
-            onLeftClick={(cell) => send({ cell, type: "CLICK" })}
-            onMiddleClick={(cell) => send({ cell, type: "CLEAR_NEIGHBORS" })}
-            onRightClick={(cell) => send({ cell, type: "MARK" })}
-          />
+          <>
+            <MinesweeperBoard
+              board={state.context}
+              onLeftClick={(cell) => send({ cell, type: "CLICK" })}
+              onMiddleClick={(cell) => send({ cell, type: "CLEAR_NEIGHBORS" })}
+              onRightClick={(cell) => send({ cell, type: "MARK" })}
+            />
+            <div className={"minesweeper__game__footer"}>
+              <p className="minesweeper__game__footer__left">
+                Time: {secondsToFormattedString(gameTimeInSeconds)}
+              </p>
+              <p
+                className={`minesweeper__game__footer__right ${
+                  state.context.triedMarkingTooManyCells
+                    ? "minesweeper__game__footer__right--too-many-cells"
+                    : ""
+                }`}
+              >
+                Mines remaining: {state.context.numFlagsLeft}
+              </p>
+            </div>
+          </>
         )}
       </div>
     </div>

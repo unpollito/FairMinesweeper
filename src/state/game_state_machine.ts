@@ -35,12 +35,12 @@ export const gameStateMachine = createMachine<
       idle: {
         on: {
           START: {
-            actions: ["initBoard"],
             target: "beforeFirstClick",
           },
         },
       },
       beforeFirstClick: {
+        entry: ["initBoard", "setStartTime"],
         on: {
           CLICK: {
             target: "handlingFirstClick",
@@ -86,17 +86,17 @@ export const gameStateMachine = createMachine<
         },
       },
       won: {
+        entry: ["setEndTime"],
         on: {
           START: {
-            actions: ["initBoard"],
             target: "beforeFirstClick",
           },
         },
       },
       lost: {
+        entry: ["setEndTime"],
         on: {
           START: {
-            actions: ["initBoard"],
             target: "beforeFirstClick",
           },
         },
@@ -120,10 +120,16 @@ export const gameStateMachine = createMachine<
         }
         const result = toggleCellMark({ board: context, cell: event.cell });
         return {
-          triedMarkingTooManyCells: result.triedMarkingTooManyCells,
           ...result.board,
+          triedMarkingTooManyCells: result.triedMarkingTooManyCells,
         };
       }),
+      // Need to put up with this or else I get compilation errors because XState's types
+      // are brittle.
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      setEndTime: assign((_) => ({ endTime: Date.now() })),
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      setStartTime: assign((_) => ({ startTime: Date.now() })),
     },
     services: {
       handleChange: (context, event) => {

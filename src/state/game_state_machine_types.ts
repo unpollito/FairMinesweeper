@@ -1,6 +1,8 @@
 import { GameBoard, GameCell, GameDifficulty } from "../common/types";
 
 export interface GameStateMachineContext extends Omit<GameBoard, "status"> {
+  endTime?: number;
+  startTime?: number;
   triedMarkingTooManyCells: boolean;
 }
 
