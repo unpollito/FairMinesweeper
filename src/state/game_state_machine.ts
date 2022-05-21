@@ -40,7 +40,7 @@ export const gameStateMachine = createMachine<
         },
       },
       beforeFirstClick: {
-        entry: ["initBoard", "setStartTime"],
+        entry: ["initBoard", "setStartTime", "unsetEndTime"],
         on: {
           CLICK: {
             target: "handlingFirstClick",
@@ -130,6 +130,8 @@ export const gameStateMachine = createMachine<
       setEndTime: assign((_) => ({ endTime: Date.now() })),
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       setStartTime: assign((_) => ({ startTime: Date.now() })),
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      unsetEndTime: assign((_) => ({ endTime: undefined })),
     },
     services: {
       handleChange: (context, event) => {

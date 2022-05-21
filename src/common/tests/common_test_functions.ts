@@ -58,7 +58,7 @@ export const generate000_x1xBoardForTests = (): GameBoard => ({
         columnIndex: 1,
         hasMine: false,
         numNeighborsWithMines: 2,
-        rowIndex: 0,
+        rowIndex: 1,
         status: "closed",
       },
       {
