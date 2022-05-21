@@ -2,7 +2,7 @@ import {
   generate000_x1xBoardForTests,
   generate000x_11xxBoardForTests,
 } from "../common/tests/common_test_functions";
-import { openCell } from "./open_cell_functions";
+import { openCell } from "./open_single_cell_functions";
 import { BoardAndStatus, GameBoard } from "../common/types";
 
 describe("openCell", () => {

@@ -1,11 +1,11 @@
 import {
   BoardAndCellAndStatus,
   BoardAndStatus,
-  GameBoard,
   GameStatus,
 } from "../common/types";
 import { cloneCellsAround } from "../common/board_cloning_functions";
-import { getCellNeighbors } from "../common/cell_neighbor_functions";
+import { clearNeighbors } from "./open_neighbors_functions";
+import { hasOpenedEnoughCellsToWin } from "./win_condition_functions";
 
 export const openCell = ({
   board: oldBoard,
@@ -50,29 +50,3 @@ export const openCell = ({
 
   return { board: newBoard, status: newStatus };
 };
-
-export const clearNeighbors = ({
-  board: oldBoard,
-  cell: oldCell,
-  status: oldStatus,
-}: BoardAndCellAndStatus): BoardAndStatus => {
-  if (oldCell.status !== "marked" && oldCell.status !== "open") {
-    return { board: oldBoard, status: oldStatus };
-  }
-  let newBoard = oldBoard;
-  let newStatus = oldStatus;
-  getCellNeighbors({ board: oldBoard, cell: oldCell }).forEach((neighbor) => {
-    const nextResult = openCell({
-      board: newBoard,
-      cell: newBoard.cells[neighbor.rowIndex][neighbor.columnIndex],
-      status: newStatus,
-    });
-    newBoard = nextResult.board;
-    newStatus = nextResult.status;
-  });
-  return { board: newBoard, status: newStatus };
-};
-
-const hasOpenedEnoughCellsToWin = (board: GameBoard): boolean =>
-  board.numOpenedCells >=
-  board.cells.length * board.cells[0].length - board.numTotalMines;

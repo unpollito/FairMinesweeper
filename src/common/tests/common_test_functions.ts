@@ -141,7 +141,78 @@ export const generate000x_11xxBoardForTests = (): GameBoard => ({
       },
     ],
   ],
-  numFlagsLeft: 2,
+  numFlagsLeft: 3,
   numOpenedCells: 0,
   numTotalMines: 3,
+});
+
+export const generate0x0x_1x1xBoardForTests = (): GameBoard => ({
+  // 2x4 board with mines in [0,1], [0,3], [1,1] and [1,3]:
+  // 0: [_,x,_,x]
+  // 1: [_,x,_,x]
+  cells: [
+    [
+      {
+        columnIndex: 0,
+        hasMine: false,
+        numNeighborsWithMines: 2,
+        rowIndex: 0,
+        status: "closed",
+      },
+      {
+        columnIndex: 1,
+        hasMine: true,
+        numNeighborsWithMines: 1,
+        rowIndex: 0,
+        status: "closed",
+      },
+      {
+        columnIndex: 2,
+        hasMine: false,
+        numNeighborsWithMines: 4,
+        rowIndex: 0,
+        status: "closed",
+      },
+      {
+        columnIndex: 3,
+        hasMine: true,
+        numNeighborsWithMines: 1,
+        rowIndex: 0,
+        status: "closed",
+      },
+    ],
+    [
+      {
+        columnIndex: 0,
+        hasMine: false,
+        numNeighborsWithMines: 2,
+        rowIndex: 1,
+        status: "closed",
+      },
+      {
+        columnIndex: 1,
+        hasMine: true,
+        numNeighborsWithMines: 1,
+        rowIndex: 1,
+        status: "closed",
+      },
+      {
+        columnIndex: 2,
+        hasMine: false,
+        numNeighborsWithMines: 4,
+        rowIndex: 1,
+        status: "closed",
+      },
+      {
+        columnIndex: 3,
+        hasMine: true,
+        numNeighborsWithMines: 1,
+        rowIndex: 1,
+        status: "closed",
+      },
+    ],
+  ],
+  numFlagsLeft: 4,
+  numOpenedCells: 0,
+  numTotalMines: 4,
 });

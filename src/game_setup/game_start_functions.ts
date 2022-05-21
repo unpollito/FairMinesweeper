@@ -1,5 +1,5 @@
 import { BoardAndStatus, GameBoard, GameCell } from "../common/types";
-import { openCell } from "../game_rules/open_cell_functions";
+import { openCell } from "../game_rules/open_single_cell_functions";
 import { fillBoardAfterFirstClick } from "./board_filling_functions";
 
 export const handleFirstClick = ({
