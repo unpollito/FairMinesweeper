@@ -2,9 +2,9 @@ import { fillBoardAfterFirstClick } from "./board_filling_functions";
 import { handleFirstClick } from "./game_start_functions";
 import { BoardAndStatus } from "../common/types";
 import { generateSampleBoardForTests } from "../common/tests/common_test_functions";
-import { openCell } from "../game_rules/game_rules_functions";
+import { openCell } from "../game_rules/open_cell_functions";
 
-jest.mock("../game_rules/game_rules_functions");
+jest.mock("../game_rules/open_cell_functions");
 jest.mock("../game_setup/board_filling_functions");
 
 describe("handleFirstClick", () => {

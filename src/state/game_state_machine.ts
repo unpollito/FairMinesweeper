@@ -8,12 +8,9 @@ import {
   generateEmptyBoard,
   handleFirstClick,
 } from "../game_setup/game_start_functions";
-import {
-  clearNeighbors,
-  openCell,
-  toggleCellMark,
-} from "../game_rules/game_rules_functions";
+import { clearNeighbors, openCell } from "../game_rules/open_cell_functions";
 import { BoardAndStatus } from "../common/types";
+import { toggleCellMark } from "../game_rules/mark_cell_functions";
 
 export const assignBoardAfterChange: AssignAction<
   GameStateMachineContext,
