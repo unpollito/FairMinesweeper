@@ -2,25 +2,34 @@ import React, { useEffect, useRef, useState } from "react";
 import "./Minesweeper.css";
 import { gameStateMachine } from "./state/game_state_machine";
 import { useMachine } from "@xstate/react";
-import { GameBoard, GameDifficulty } from "./common/types";
+import { GameDifficulty } from "./common/types";
 import { MinesweeperBoard } from "./MinesweeperBoard";
 import { secondsToFormattedString } from "./time/time_functions";
-import { boardToBoardWithoutMineInfo } from "./solver/solver_board_conversion_functions";
+import { SolverStep } from "./solver/solver_types";
+import { HintSection } from "./HintSection";
 
 export const Minesweeper = (): React.ReactElement => {
   const [state, send] = useMachine(gameStateMachine);
   const [gameTimeInSeconds, setGameTimeInSeconds] = useState(0);
   const timeIntervalHandle = useRef<number | undefined>(undefined);
-  const solverWorker = useRef<Worker | undefined>(undefined);
 
   useEffect(() => {
-    solverWorker.current = new Worker("solver_worker.js");
+    const solverWorker = new Worker("solver_worker.js");
 
-    solverWorker.current?.addEventListener("message", () => {
-      // console.log(JSON.stringify(event.data));
-    });
+    send({ solverWorker, type: "SET_SOLVER_WORKER" });
 
-    return () => solverWorker.current?.terminate();
+    solverWorker.addEventListener(
+      "message",
+      (event: MessageEvent<SolverStep>) => {
+        if (event.data.type !== "error") {
+          send({ hint: event.data, type: "SET_HINT" });
+        }
+      }
+    );
+
+    return () => {
+      solverWorker.terminate();
+    };
   }, []);
 
   useEffect(() => {
@@ -83,6 +92,9 @@ export const Minesweeper = (): React.ReactElement => {
           <>
             <MinesweeperBoard
               board={state.context}
+              hint={
+                state.context.isShowingHint ? state.context.hint : undefined
+              }
               onLeftClick={(cell) => send({ cell, type: "CLICK" })}
               onMiddleClick={(cell) => send({ cell, type: "CLEAR_NEIGHBORS" })}
               onRightClick={(cell) => send({ cell, type: "MARK" })}
@@ -100,24 +112,13 @@ export const Minesweeper = (): React.ReactElement => {
               >
                 Mines remaining: {state.context.numFlagsLeft}
               </p>
-              <button
-                onClick={() => {
-                  if (solverWorker.current) {
-                    const board: GameBoard = {
-                      cells: state.context.cells,
-                      numFlagsLeft: state.context.numFlagsLeft,
-                      numOpenedCells: state.context.numOpenedCells,
-                      numTotalMines: state.context.numTotalMines,
-                    };
-                    solverWorker.current.postMessage(
-                      boardToBoardWithoutMineInfo(board)
-                    );
-                  }
-                }}
-              >
-                Hint
-              </button>
             </div>
+            <HintSection
+              hint={
+                state.context.isShowingHint ? state.context.hint : undefined
+              }
+              onRequestHint={() => send({ type: "SHOW_HINT" })}
+            />
           </>
         )}
       </div>

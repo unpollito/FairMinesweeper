@@ -10,6 +10,7 @@ import { BoardAndStatus } from "../common/types";
 import { toggleCellMark } from "../game_rules/mark_cell_functions";
 import { clearNeighbors } from "../game_rules/open_neighbors_functions";
 import { generateEmptyBoard } from "../game_setup/board_generation_functions";
+import { boardToBoardWithoutMineInfo } from "../solver/solver_board_conversion_functions";
 
 export const assignBoardAfterChange: AssignAction<
   GameStateMachineContext,
@@ -29,22 +30,34 @@ export const gameStateMachine = createMachine<
     initial: "idle",
     context: {
       ...generateEmptyBoard("easy"),
+      isShowingHint: false,
       triedMarkingTooManyCells: false,
     },
     states: {
       idle: {
         on: {
+          SET_SOLVER_WORKER: {
+            actions: ["setSolverWorker"],
+          },
           START: {
             target: "beforeFirstClick",
           },
         },
       },
       beforeFirstClick: {
-        entry: ["initBoard", "setStartTime", "unsetEndTime"],
+        entry: [
+          "initBoard",
+          "setStartTime",
+          "unsetEndTime",
+          "disableIsShowingHint",
+          "requestHint",
+        ],
         on: {
           CLICK: {
             target: "handlingFirstClick",
           },
+          SET_HINT: { actions: ["setHint"] },
+          SHOW_HINT: { actions: ["enableIsShowingHint"] },
         },
       },
       handlingFirstClick: {
@@ -57,10 +70,19 @@ export const gameStateMachine = createMachine<
         },
       },
       playing: {
+        entry: ["disableIsShowingHint", "requestHint"],
         on: {
-          CLEAR_NEIGHBORS: { target: "handlingChange" },
-          CLICK: { target: "handlingChange" },
-          MARK: { actions: ["markCell"] },
+          CLEAR_NEIGHBORS: {
+            actions: ["disableIsShowingHint"],
+            target: "handlingChange",
+          },
+          CLICK: {
+            actions: ["disableIsShowingHint"],
+            target: "handlingChange",
+          },
+          MARK: { actions: ["markCell", "requestHint"] },
+          SET_HINT: { actions: ["setHint"] },
+          SHOW_HINT: { actions: ["enableIsShowingHint"] },
         },
       },
       handlingChange: {
@@ -105,6 +127,12 @@ export const gameStateMachine = createMachine<
   },
   {
     actions: {
+      // Need to put up with this or else I get compilation errors because XState's types
+      // are brittle.
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      disableIsShowingHint: assign((_) => ({ isShowingHint: false })),
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      enableIsShowingHint: assign((_) => ({ isShowingHint: true })),
       initBoard: assign((context, event) => {
         if (event.type !== "START") {
           throw new Error("tried to initBoard with wrong event type");
@@ -116,7 +144,7 @@ export const gameStateMachine = createMachine<
       }),
       markCell: assign((context, event) => {
         if (event.type !== "MARK") {
-          throw new Error("tried to initBoard with wrong event type");
+          throw new Error("tried to markCell with wrong event type");
         }
         const result = toggleCellMark({ board: context, cell: event.cell });
         return {
@@ -124,10 +152,30 @@ export const gameStateMachine = createMachine<
           triedMarkingTooManyCells: result.triedMarkingTooManyCells,
         };
       }),
-      // Need to put up with this or else I get compilation errors because XState's types
-      // are brittle.
+      requestHint: (context) => {
+        context.solverWorker?.postMessage(
+          boardToBoardWithoutMineInfo({
+            cells: context.cells,
+            numFlagsLeft: context.numFlagsLeft,
+            numOpenedCells: context.numOpenedCells,
+            numTotalMines: context.numTotalMines,
+          })
+        );
+      },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       setEndTime: assign((_) => ({ endTime: Date.now() })),
+      setHint: assign((context, event) => {
+        if (event.type !== "SET_HINT") {
+          throw new Error("tried to setHint with wrong event type");
+        }
+        return { hint: event.hint };
+      }),
+      setSolverWorker: assign((_, event) => {
+        if (event.type !== "SET_SOLVER_WORKER") {
+          throw new Error("tried to setSolverWorker with wrong event type");
+        }
+        return { solverWorker: event.solverWorker };
+      }),
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       setStartTime: assign((_) => ({ startTime: Date.now() })),
       // eslint-disable-next-line @typescript-eslint/no-unused-vars

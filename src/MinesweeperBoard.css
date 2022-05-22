@@ -21,3 +21,7 @@
 .board__row__cell--closed:hover {
     background-color: #3b4762;
 }
+
+.board__row__cell--highlighted {
+    background-color: #557E72;
+}

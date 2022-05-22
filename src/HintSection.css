@@ -1,0 +1,31 @@
+.hint-section {
+    max-width: 30em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.hint-section__button {
+    border: 0;
+    border-radius: 0.5em;
+    text-align: center;
+    background-color: #39f;
+    color: white;
+    font-size: 1em;
+    padding: 0.5em;
+    width: 8em;
+    cursor: pointer;
+}
+
+.hint-section__text {
+    text-align: center;
+}
+
+.hint-section__button:hover {
+    background-color: #6bf;
+}
+
+.hint-section__button--disabled, .hint-section__button--disabled:hover {
+    background-color: #a6a3a0;
+    cursor: auto;
+}
