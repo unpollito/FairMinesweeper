@@ -31,5 +31,4 @@ export interface BoardAndCellAndStatus {
   status: GameStatus;
 }
 
-export type BoardAndCell = Pick<BoardAndCellAndStatus, "board" | "cell">;
 export type BoardAndStatus = Pick<BoardAndCellAndStatus, "board" | "status">;

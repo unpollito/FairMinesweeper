@@ -1,12 +1,13 @@
 import { GameBoard, GameCell } from "./types";
+import { GameCellWithoutMineInfo } from "../solver/solver_types";
 
-export const getCellNeighbors = ({
+export const getCellNeighbors = <T extends GameCell | GameCellWithoutMineInfo>({
   board,
   cell: { columnIndex, rowIndex },
 }: {
-  board: GameBoard;
-  cell: GameCell;
-}): GameCell[] =>
+  board: Omit<GameBoard, "cells"> & { cells: T[][] };
+  cell: T;
+}): T[] =>
   [
     board.cells[rowIndex - 1]?.[columnIndex - 1],
     board.cells[rowIndex - 1]?.[columnIndex],

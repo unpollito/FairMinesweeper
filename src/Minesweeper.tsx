@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import "./Minesweeper.css";
 import { gameStateMachine } from "./state/game_state_machine";
 import { useMachine } from "@xstate/react";
-import { GameDifficulty } from "./common/types";
+import { GameBoard, GameDifficulty } from "./common/types";
 import { MinesweeperBoard } from "./MinesweeperBoard";
 import { secondsToFormattedString } from "./time/time_functions";
 
@@ -10,6 +10,17 @@ export const Minesweeper = (): React.ReactElement => {
   const [state, send] = useMachine(gameStateMachine);
   const [gameTimeInSeconds, setGameTimeInSeconds] = useState(0);
   const timeIntervalHandle = useRef<number | undefined>(undefined);
+  const solverWorker = useRef<Worker | undefined>(undefined);
+
+  useEffect(() => {
+    solverWorker.current = new Worker("solver_worker.js");
+
+    solverWorker.current?.addEventListener("message", () => {
+      // console.log(JSON.stringify(event.data));
+    });
+
+    return () => solverWorker.current?.terminate();
+  }, []);
 
   useEffect(() => {
     if (
@@ -88,6 +99,21 @@ export const Minesweeper = (): React.ReactElement => {
               >
                 Mines remaining: {state.context.numFlagsLeft}
               </p>
+              <button
+                onClick={() => {
+                  if (solverWorker.current) {
+                    const board: GameBoard = {
+                      cells: state.context.cells,
+                      numFlagsLeft: state.context.numFlagsLeft,
+                      numOpenedCells: state.context.numOpenedCells,
+                      numTotalMines: state.context.numTotalMines,
+                    };
+                    solverWorker.current.postMessage(board);
+                  }
+                }}
+              >
+                Hint
+              </button>
             </div>
           </>
         )}
