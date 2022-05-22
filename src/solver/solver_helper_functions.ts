@@ -1,10 +1,11 @@
 import {
   GameBoardWithoutMineInfo as Board,
   GameCellWithoutMineInfo as Cell,
+  OpenGameCellWithoutMineInfo as OpenCell,
 } from "./solver_types";
 import { getCellNeighbors } from "../common/cell_neighbor_functions";
 
-export const getFrontier = (board: Board): Cell[] =>
+export const getFrontier = (board: Board): OpenCell[] =>
   board.cells
     .map(
       (row) =>
@@ -23,7 +24,7 @@ export const getFrontier = (board: Board): Cell[] =>
           })
           .filter((a) => !!a) as Cell[]
     )
-    .reduce((a, b) => [...a, ...b], []);
+    .reduce((a, b) => [...a, ...b], []) as OpenCell[];
 
 export const getBoardCorners = (board: Board): Cell[] => [
   board.cells[0][0],

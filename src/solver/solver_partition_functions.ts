@@ -1,6 +1,7 @@
 import {
   GameBoardWithoutMineInfo as Board,
   GameCellWithoutMineInfo as Cell,
+  OpenGameCellWithoutMineInfo as OpenCell,
   SolverMarkCellsAfterPartitionStep,
   SolverOpenCellsAfterPartitionStep,
 } from "./solver_types";
@@ -36,7 +37,7 @@ import { getCellNeighbors } from "../common/cell_neighbor_functions";
 interface CellRestrictionPartition {
   affectedCells: Cell[];
   numMines: number;
-  originCell: Cell;
+  originCell: OpenCell;
 }
 
 export const trySolvingSomePartition = ({
@@ -44,7 +45,7 @@ export const trySolvingSomePartition = ({
   frontier,
 }: {
   board: Board;
-  frontier: Cell[];
+  frontier: OpenCell[];
 }):
   | SolverOpenCellsAfterPartitionStep
   | SolverMarkCellsAfterPartitionStep
@@ -103,7 +104,7 @@ export const trySolvingSomePartition = ({
             cellPartition.numMines - cellMinusNeighborCells.length
           );
           const maxMinesInIntersection = Math.min(
-            neighbor.numNeighborsWithMines,
+            (neighbor as OpenCell).numNeighborsWithMines,
             cell.numNeighborsWithMines,
             intersectionCells.length
           );

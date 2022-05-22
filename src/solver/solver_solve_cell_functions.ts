@@ -1,6 +1,6 @@
 import {
   GameBoardWithoutMineInfo as Board,
-  GameCellWithoutMineInfo,
+  OpenGameCellWithoutMineInfo,
   SolverClearNeighborsStep,
   SolverMarkAroundSingleCellStep,
   SolverStep,
@@ -12,7 +12,7 @@ export const trySolvingSomeCell = ({
   frontier,
 }: {
   board: Board;
-  frontier: GameCellWithoutMineInfo[];
+  frontier: OpenGameCellWithoutMineInfo[];
 }): SolverStep | undefined => {
   const possibleClearSteps: SolverClearNeighborsStep[] = [];
   const possibleMarkSteps: SolverMarkAroundSingleCellStep[] = [];

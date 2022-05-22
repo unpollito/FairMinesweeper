@@ -1,6 +1,23 @@
 import { GameBoard, GameCell } from "../common/types";
 
-export type GameCellWithoutMineInfo = Omit<GameCell, "hasMine">;
+type BaseGameCellWithoutMineInfo = Omit<
+  Omit<GameCell, "hasMine">,
+  "numNeighborsWithMines"
+>;
+
+export interface OpenGameCellWithoutMineInfo
+  extends BaseGameCellWithoutMineInfo {
+  type: "open";
+  numNeighborsWithMines: number;
+}
+
+interface NonOpenGameCellWithoutMineInfo extends BaseGameCellWithoutMineInfo {
+  type: "closed" | "marked" | "exploded";
+}
+
+export type GameCellWithoutMineInfo =
+  | OpenGameCellWithoutMineInfo
+  | NonOpenGameCellWithoutMineInfo;
 
 export interface GameBoardWithoutMineInfo extends Omit<GameBoard, "cells"> {
   cells: GameCellWithoutMineInfo[][];

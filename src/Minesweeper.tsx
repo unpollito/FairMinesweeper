@@ -5,6 +5,7 @@ import { useMachine } from "@xstate/react";
 import { GameBoard, GameDifficulty } from "./common/types";
 import { MinesweeperBoard } from "./MinesweeperBoard";
 import { secondsToFormattedString } from "./time/time_functions";
+import { boardToBoardWithoutMineInfo } from "./solver/solver_board_conversion_functions";
 
 export const Minesweeper = (): React.ReactElement => {
   const [state, send] = useMachine(gameStateMachine);
@@ -108,7 +109,9 @@ export const Minesweeper = (): React.ReactElement => {
                       numOpenedCells: state.context.numOpenedCells,
                       numTotalMines: state.context.numTotalMines,
                     };
-                    solverWorker.current.postMessage(board);
+                    solverWorker.current.postMessage(
+                      boardToBoardWithoutMineInfo(board)
+                    );
                   }
                 }}
               >
