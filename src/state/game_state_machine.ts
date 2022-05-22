@@ -80,7 +80,9 @@ export const gameStateMachine = createMachine<
             actions: ["disableIsShowingHint"],
             target: "handlingChange",
           },
-          MARK: { actions: ["markCell", "requestHint"] },
+          MARK: {
+            actions: ["markCell", "disableIsShowingHint", "requestHint"],
+          },
           SET_HINT: { actions: ["setHint"] },
           SHOW_HINT: { actions: ["enableIsShowingHint"] },
         },

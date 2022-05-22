@@ -9,9 +9,11 @@ export const getHintText = (hint: SolverStep): string => {
   } else if (hint.type === "mark") {
     if (hint.isPartition) {
       return (
-        `Cell ${hint.restrictingCell} ensures that there are ${hint.cells.length} ` +
-        `mines in ${hint.commonRegion.map(cellToString).join(", ")}, so` +
-        `there must be mines in ${hint.cells.map(cellToString).join(", ")}.`
+        `Cell ${cellToString(hint.restrictingCell)} ensures that there are ${
+          hint.cells.length
+        } ` +
+        `mine(s) in ${hint.commonRegion.map(cellToString).join(" + ")}, so ` +
+        `there must be mines in ${hint.cells.map(cellToString).join(" + ")}.`
       );
     } else {
       return (
@@ -19,11 +21,13 @@ export const getHintText = (hint: SolverStep): string => {
       );
     }
   } else if (hint.type === "open") {
-    return (
-      `Cell ${hint.restrictingCell} ensures that there are ${hint.cells.length} ` +
-      `mines in ${hint.commonRegion.map(cellToString).join(", ")}, so` +
-      `there cannot be any mines in ${hint.cells.map(cellToString).join(", ")}.`
-    );
+    return `Cell ${cellToString(hint.restrictingCell)} ensures that there are ${
+      hint.cells.length
+    } mines in ${hint.commonRegion
+      .map(cellToString)
+      .join(", ")}, so there cannot be any mines in ${hint.cells
+      .map(cellToString)
+      .join(", ")}.`;
   } else if (hint.type === "random") {
     if (hint.choice === "corner") {
       return (
@@ -44,7 +48,7 @@ export const getHintText = (hint: SolverStep): string => {
 };
 
 const cellToString = (cell: GameCellWithoutMineInfo): string =>
-  `(row ${cell.rowIndex + 1}, column ${cell.columnIndex + 1})`;
+  `[${cell.rowIndex + 1}, ${cell.columnIndex + 1}]`;
 
 export const getCellToHighlight = (
   hint: SolverStep

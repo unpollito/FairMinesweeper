@@ -17,36 +17,34 @@ export const trySolvingSomeCell = ({
   const possibleClearSteps: SolverClearNeighborsStep[] = [];
   const possibleMarkSteps: SolverMarkAroundSingleCellStep[] = [];
   for (const cell of frontier) {
-    if (cell.status === "open") {
-      const neighbors = getCellNeighbors({ board, cell });
-      const closedNeighbors = neighbors.filter(
-        (neighbor) => neighbor.status === "closed"
-      );
-      const markedNeighbors = neighbors.filter(
-        (neighbor) => neighbor.status === "marked"
-      );
-      if (
-        closedNeighbors.length + markedNeighbors.length ===
-        cell.numNeighborsWithMines
-      ) {
-        possibleMarkSteps.push({
-          around: cell,
-          cells: closedNeighbors,
-          isPartition: false,
-          type: "mark",
-        });
-      }
-      if (
-        markedNeighbors.length === cell.numNeighborsWithMines &&
-        closedNeighbors.length
-      ) {
-        possibleClearSteps.push({
-          around: cell,
-          cells: closedNeighbors,
-          isPartition: false,
-          type: "clearNeighbors",
-        });
-      }
+    const neighbors = getCellNeighbors({ board, cell });
+    const closedNeighbors = neighbors.filter(
+      (neighbor) => neighbor.status === "closed"
+    );
+    const markedNeighbors = neighbors.filter(
+      (neighbor) => neighbor.status === "marked"
+    );
+    if (
+      closedNeighbors.length + markedNeighbors.length ===
+      cell.numNeighborsWithMines
+    ) {
+      possibleMarkSteps.push({
+        around: cell,
+        cells: closedNeighbors,
+        isPartition: false,
+        type: "mark",
+      });
+    }
+    if (
+      markedNeighbors.length === cell.numNeighborsWithMines &&
+      closedNeighbors.length
+    ) {
+      possibleClearSteps.push({
+        around: cell,
+        cells: closedNeighbors,
+        isPartition: false,
+        type: "clearNeighbors",
+      });
     }
   }
 

@@ -11,9 +11,12 @@ export const boardToBoardWithoutMineInfo = (
   ...board,
   cells: board.cells.map((row) =>
     row.map((cell) => {
+      // INTENDED: this is a convenient way to leave these out.
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { numNeighborsWithMines, hasMine, ...result } = cell;
       if (result.status === "open") {
-        (result as OpenGameCellWithoutMineInfo).numNeighborsWithMines;
+        (result as OpenGameCellWithoutMineInfo).numNeighborsWithMines =
+          cell.numNeighborsWithMines;
       }
       return result as GameCellWithoutMineInfo;
     })

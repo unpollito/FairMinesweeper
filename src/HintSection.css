@@ -1,5 +1,5 @@
 .hint-section {
-    max-width: 30em;
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -18,7 +18,10 @@
 }
 
 .hint-section__text {
+    position: absolute;
+    top: 2em;
     text-align: center;
+    width: 30em;
 }
 
 .hint-section__button:hover {
