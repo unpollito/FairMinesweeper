@@ -10,7 +10,7 @@ export const getFrontier = (board: Board): Cell[] =>
       (row) =>
         row
           .map((cell) => {
-            if (cell.status === "open" || cell.status === "marked") {
+            if (cell.status === "open") {
               if (
                 getCellNeighbors({ board, cell }).some(
                   (cell) => cell.status !== "open" && cell.status !== "marked"

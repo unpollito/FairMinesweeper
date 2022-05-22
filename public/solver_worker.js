@@ -39,7 +39,7 @@
 
   // src/solver/solver_helper_functions.ts
   var getFrontier = (board) => board.cells.map((row) => row.map((cell) => {
-    if (cell.status === "open" || cell.status === "marked") {
+    if (cell.status === "open") {
       if (getCellNeighbors({ board, cell }).some((cell2) => cell2.status !== "open" && cell2.status !== "marked")) {
         return cell;
       }
@@ -101,6 +101,7 @@
           possibleMarkSteps.push({
             around: cell,
             cells: closedNeighbors,
+            isPartition: false,
             type: "mark"
           });
         }
@@ -108,6 +109,7 @@
           possibleClearSteps.push({
             around: cell,
             cells: closedNeighbors,
+            isPartition: false,
             type: "clearNeighbors"
           });
         }
@@ -121,12 +123,85 @@
     return possibleMarkSteps[0];
   };
 
+  // src/solver/solver_partition_functions.ts
+  var trySolvingSomePartition = ({
+    board,
+    frontier
+  }) => {
+    var _a;
+    const partitionMap = {};
+    frontier.forEach((cell) => {
+      const neighbors = getCellNeighbors({ board, cell });
+      const markedNeighbors = neighbors.filter((neighbor) => neighbor.status === "marked");
+      const restrictableCells = neighbors.filter((neighbor) => neighbor.status === "closed");
+      const numMinesInRestrictableNeighbors = cell.numNeighborsWithMines - markedNeighbors.length;
+      if (!partitionMap[cell.rowIndex]) {
+        partitionMap[cell.rowIndex] = {};
+      }
+      partitionMap[cell.rowIndex][cell.columnIndex] = {
+        affectedCells: restrictableCells,
+        numMines: numMinesInRestrictableNeighbors,
+        originCell: cell
+      };
+    });
+    for (const cell of frontier) {
+      const cellPartition = partitionMap[cell.rowIndex][cell.columnIndex];
+      const neighbors = getCellNeighbors({ board, cell });
+      for (const neighbor of neighbors) {
+        const neighborPartition = (_a = partitionMap[neighbor.rowIndex]) == null ? void 0 : _a[neighbor.columnIndex];
+        const neighborComesAfterCell = neighbor.rowIndex > cell.rowIndex || neighbor.rowIndex === cell.rowIndex && neighbor.columnIndex > cell.columnIndex;
+        if (!!neighborPartition && neighborComesAfterCell) {
+          const intersectionCells = cellPartition.affectedCells.filter((cell2) => neighborPartition.affectedCells.includes(cell2));
+          if (intersectionCells.length > 0) {
+            const cellMinusNeighborCells = cellPartition.affectedCells.filter((cell2) => !neighborPartition.affectedCells.includes(cell2));
+            const neighborMinusCellCells = neighborPartition.affectedCells.filter((cell2) => !cellPartition.affectedCells.includes(cell2));
+            const minMinesInIntersection = Math.max(neighborPartition.numMines - neighborMinusCellCells.length, cellPartition.numMines - cellMinusNeighborCells.length);
+            const maxMinesInIntersection = Math.min(neighbor.numNeighborsWithMines, cell.numNeighborsWithMines, intersectionCells.length);
+            if (minMinesInIntersection === maxMinesInIntersection) {
+              if (cellMinusNeighborCells.length > 0) {
+                const numMinesInCellMinusNeighborPartition = cellPartition.numMines - minMinesInIntersection;
+                if (numMinesInCellMinusNeighborPartition === cellMinusNeighborCells.length || numMinesInCellMinusNeighborPartition === 0) {
+                  return {
+                    cells: cellMinusNeighborCells,
+                    commonRegion: intersectionCells,
+                    isPartition: true,
+                    restrictedCell: cell,
+                    restrictingCell: neighbor,
+                    type: numMinesInCellMinusNeighborPartition === 0 ? "open" : "mark"
+                  };
+                }
+              }
+              if (neighborMinusCellCells.length > 0) {
+                const numMinesInNeighborMinusCellPartition = neighborPartition.numMines - minMinesInIntersection;
+                if (numMinesInNeighborMinusCellPartition === neighborMinusCellCells.length || numMinesInNeighborMinusCellPartition === 0) {
+                  return {
+                    cells: neighborMinusCellCells,
+                    commonRegion: intersectionCells,
+                    isPartition: true,
+                    restrictedCell: neighbor,
+                    restrictingCell: cell,
+                    type: numMinesInNeighborMinusCellPartition === 0 ? "open" : "mark"
+                  };
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    return void 0;
+  };
+
   // src/solver/solver_logic_functions.ts
   var processStep = (board) => {
     const frontier = getFrontier(board);
     const solveCellStep = trySolvingSomeCell({ board, frontier });
     if (solveCellStep) {
       return solveCellStep;
+    }
+    const solvePartitionStep = trySolvingSomePartition({ board, frontier });
+    if (solvePartitionStep) {
+      return solvePartitionStep;
     }
     const randomChoice = getRandomChoice(board);
     if (randomChoice.cells.length > 0) {

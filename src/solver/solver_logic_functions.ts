@@ -2,6 +2,7 @@ import { GameBoardWithoutMineInfo as Board, SolverStep } from "./solver_types";
 import { getFrontier } from "./solver_helper_functions";
 import { getRandomChoice } from "./solver_random_choice_functions";
 import { trySolvingSomeCell } from "./solver_solve_cell_functions";
+import { trySolvingSomePartition } from "./solver_partition_functions";
 
 export const processStep = (board: Board): SolverStep => {
   const frontier = getFrontier(board);
@@ -9,6 +10,11 @@ export const processStep = (board: Board): SolverStep => {
   const solveCellStep = trySolvingSomeCell({ board, frontier });
   if (solveCellStep) {
     return solveCellStep;
+  }
+
+  const solvePartitionStep = trySolvingSomePartition({ board, frontier });
+  if (solvePartitionStep) {
+    return solvePartitionStep;
   }
 
   const randomChoice = getRandomChoice(board);

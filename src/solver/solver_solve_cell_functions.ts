@@ -32,6 +32,7 @@ export const trySolvingSomeCell = ({
         possibleMarkSteps.push({
           around: cell,
           cells: closedNeighbors,
+          isPartition: false,
           type: "mark",
         });
       }
@@ -42,6 +43,7 @@ export const trySolvingSomeCell = ({
         possibleClearSteps.push({
           around: cell,
           cells: closedNeighbors,
+          isPartition: false,
           type: "clearNeighbors",
         });
       }

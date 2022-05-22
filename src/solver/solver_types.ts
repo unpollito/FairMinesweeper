@@ -10,18 +10,40 @@ export type RandomChoice = "corner" | "edge" | "middle";
 
 export type SolverStep =
   | { cells: GameCellWithoutMineInfo[]; choice: RandomChoice; type: "random" }
-  | { cell: GameCellWithoutMineInfo; type: "open" }
   | SolverClearNeighborsStep
   | SolverMarkAroundSingleCellStep
+  | SolverOpenCellsAfterPartitionStep
+  | SolverMarkCellsAfterPartitionStep
   | { message: string; type: "error" };
 
-export type SolverMarkAroundSingleCellStep = {
+export interface SolverMarkAroundSingleCellStep {
   around: GameCellWithoutMineInfo;
   cells: GameCellWithoutMineInfo[];
+  isPartition: false;
   type: "mark";
-};
-export type SolverClearNeighborsStep = {
+}
+
+export interface SolverClearNeighborsStep {
   around: GameCellWithoutMineInfo;
   cells: GameCellWithoutMineInfo[];
+  isPartition: false;
   type: "clearNeighbors";
-};
+}
+
+export interface SolverMarkCellsAfterPartitionStep {
+  cells: GameCellWithoutMineInfo[];
+  commonRegion: GameCellWithoutMineInfo[];
+  isPartition: true;
+  restrictedCell: GameCellWithoutMineInfo;
+  restrictingCell: GameCellWithoutMineInfo;
+  type: "mark";
+}
+
+export interface SolverOpenCellsAfterPartitionStep {
+  cells: GameCellWithoutMineInfo[];
+  commonRegion: GameCellWithoutMineInfo[];
+  isPartition: true;
+  restrictedCell: GameCellWithoutMineInfo;
+  restrictingCell: GameCellWithoutMineInfo;
+  type: "open";
+}
