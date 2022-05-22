@@ -6,7 +6,7 @@ export interface GameProps {
 
 export type GameDifficulty = "easy" | "medium" | "hard";
 
-export type GameCellStatus = "closed" | "marked" | "open" | "exploded";
+export type GameCellStatus = "closed" | "flagged" | "open" | "exploded";
 
 export interface GameCell {
   rowIndex: number;

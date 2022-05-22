@@ -1,18 +1,18 @@
 import { GameBoard, GameCell } from "../common/types";
 import { cloneCellsAround } from "../common/board_cloning_functions";
 
-export const toggleCellMark = ({
+export const toggleCellFlag = ({
   board: oldBoard,
   cell: oldCell,
 }: {
   board: GameBoard;
   cell: GameCell;
-}): { board: GameBoard; triedMarkingTooManyCells: boolean } => {
+}): { board: GameBoard; triedFlaggingTooManyCells: boolean } => {
   if (oldCell.status === "open" || oldCell.status === "exploded") {
-    return { board: oldBoard, triedMarkingTooManyCells: false };
+    return { board: oldBoard, triedFlaggingTooManyCells: false };
   }
   if (oldCell.status === "closed" && oldBoard.numFlagsLeft === 0) {
-    return { board: oldBoard, triedMarkingTooManyCells: true };
+    return { board: oldBoard, triedFlaggingTooManyCells: true };
   }
   const newCells = cloneCellsAround({
     around: oldCell,
@@ -22,11 +22,11 @@ export const toggleCellMark = ({
   const newCell = newCells[oldCell.rowIndex][oldCell.columnIndex];
   const newBoard = { ...oldBoard, cells: newCells };
   if (newCell.status === "closed") {
-    newCell.status = "marked";
+    newCell.status = "flagged";
     newBoard.numFlagsLeft--;
-  } else if (newCell.status === "marked") {
+  } else if (newCell.status === "flagged") {
     newCell.status = "closed";
     newBoard.numFlagsLeft++;
   }
-  return { board: newBoard, triedMarkingTooManyCells: false };
+  return { board: newBoard, triedFlaggingTooManyCells: false };
 };

@@ -97,7 +97,7 @@ export const Minesweeper = (): React.ReactElement => {
               }
               onLeftClick={(cell) => send({ cell, type: "CLICK" })}
               onMiddleClick={(cell) => send({ cell, type: "CLEAR_NEIGHBORS" })}
-              onRightClick={(cell) => send({ cell, type: "MARK" })}
+              onRightClick={(cell) => send({ cell, type: "FLAG" })}
             />
             <div className={"minesweeper__game__footer"}>
               <p className="minesweeper__game__footer__left">
@@ -105,7 +105,7 @@ export const Minesweeper = (): React.ReactElement => {
               </p>
               <p
                 className={`minesweeper__game__footer__right ${
-                  state.context.triedMarkingTooManyCells
+                  state.context.triedFlaggingTooManyCells
                     ? "minesweeper__game__footer__right--too-many-cells"
                     : ""
                 }`}

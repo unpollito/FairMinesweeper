@@ -38,5 +38,5 @@ const canChooseRandomCell = ({
 }): boolean =>
   cell.status === "closed" &&
   getCellNeighbors({ board, cell }).every(
-    (neighbor) => neighbor.status === "closed" || neighbor.status === "marked"
+    (neighbor) => neighbor.status === "closed" || neighbor.status === "flagged"
   );

@@ -1,10 +1,10 @@
 import { GameBoard, GameCell } from "../common/types";
-import { toggleCellMark } from "./mark_cell_functions";
+import { toggleCellFlag } from "./flag_cell_functions";
 import { generate000_x1xBoardForTests } from "../common/tests/common_test_functions";
 
 const initialBoard = generate000_x1xBoardForTests();
 
-describe("toggleCellMark", () => {
+describe("toggleCellFlag", () => {
   const runInvariantTests = ({
     board,
     cell,
@@ -14,22 +14,22 @@ describe("toggleCellMark", () => {
   }): void => {
     it("does not change the original board", () => {
       const originalBoard = JSON.parse(JSON.stringify(board));
-      toggleCellMark({ board, cell });
+      toggleCellFlag({ board, cell });
       expect(board).toEqual(originalBoard);
     });
 
     it("does not change the number of opened cells", () => {
-      const result = toggleCellMark({ board, cell });
+      const result = toggleCellFlag({ board, cell });
       expect(result.board.numOpenedCells).toBe(board.numOpenedCells);
     });
 
     it("does not change the number of total mines", () => {
-      const result = toggleCellMark({ board, cell });
+      const result = toggleCellFlag({ board, cell });
       expect(result.board.numTotalMines).toBe(board.numTotalMines);
     });
 
     it("does not modify any of the other cells", () => {
-      const result = toggleCellMark({ board, cell });
+      const result = toggleCellFlag({ board, cell });
       for (let rowIndex = 0; rowIndex < result.board.cells.length; rowIndex++) {
         const resultRow = result.board.cells[rowIndex];
         for (
@@ -55,7 +55,7 @@ describe("toggleCellMark", () => {
     cell: GameCell;
   }) => {
     it("does not modify any cell field other than the status", () => {
-      const result = toggleCellMark({ board, cell });
+      const result = toggleCellFlag({ board, cell });
       const resultCell = result.board.cells[cell.rowIndex][cell.columnIndex];
       const originalCell = board.cells[cell.rowIndex][cell.columnIndex];
       expect(resultCell.rowIndex).toBe(originalCell.rowIndex);
@@ -66,13 +66,13 @@ describe("toggleCellMark", () => {
       );
     });
 
-    it("returns triedMarkingTooManyCells: false", () => {
-      const result = toggleCellMark({ board, cell });
-      expect(result.triedMarkingTooManyCells).toBeFalse();
+    it("returns triedFlaggingTooManyCells: false", () => {
+      const result = toggleCellFlag({ board, cell });
+      expect(result.triedFlaggingTooManyCells).toBeFalse();
     });
   };
 
-  const runTestsForMarkingACell = ({
+  const runTestsForFlaggingACell = ({
     board,
     cell,
   }: {
@@ -83,53 +83,53 @@ describe("toggleCellMark", () => {
     runCommonTestsForCellChange({ board, cell });
 
     it(`decreases the number of available flags by one`, () => {
-      const result = toggleCellMark({ board, cell });
+      const result = toggleCellFlag({ board, cell });
       expect(result.board.numFlagsLeft).toBe(board.numFlagsLeft - 1);
     });
 
-    it("marks the passed cell", () => {
-      const result = toggleCellMark({ board, cell });
+    it("flags the passed cell", () => {
+      const result = toggleCellFlag({ board, cell });
       expect(result.board.cells[cell.rowIndex][cell.columnIndex].status).toBe(
-        "marked"
+        "flagged"
       );
     });
   };
 
-  describe("marking first cell without a mine", () => {
-    runTestsForMarkingACell({
+  describe("flaging first cell without a mine", () => {
+    runTestsForFlaggingACell({
       board: initialBoard,
       cell: initialBoard.cells[0][0],
     });
   });
 
-  describe("marking first cell with a mine", () => {
-    runTestsForMarkingACell({
+  describe("flaging first cell with a mine", () => {
+    runTestsForFlaggingACell({
       board: initialBoard,
       cell: initialBoard.cells[1][0],
     });
   });
 
-  describe("marking cell without a mine using the last flag", () => {
+  describe("flaging cell without a mine using the last flag", () => {
     const board: GameBoard = generate000_x1xBoardForTests();
-    board.cells[0][0].status = "marked";
+    board.cells[0][0].status = "flagged";
     board.numFlagsLeft = 1;
-    runTestsForMarkingACell({
+    runTestsForFlaggingACell({
       board,
       cell: board.cells[0][2],
     });
   });
 
-  describe("marking cell with a mine using the last flag", () => {
+  describe("flaging cell with a mine using the last flag", () => {
     const board: GameBoard = generate000_x1xBoardForTests();
-    board.cells[0][0].status = "marked";
+    board.cells[0][0].status = "flagged";
     board.numFlagsLeft = 1;
-    runTestsForMarkingACell({
+    runTestsForFlaggingACell({
       board,
       cell: board.cells[1][0],
     });
   });
 
-  const runTestsForUnmarkingACell = ({
+  const runTestsForUnflaggingACell = ({
     board,
     cell,
   }: {
@@ -140,55 +140,55 @@ describe("toggleCellMark", () => {
     runCommonTestsForCellChange({ board, cell });
 
     it(`increases the number of available flags by one`, () => {
-      const result = toggleCellMark({ board, cell });
+      const result = toggleCellFlag({ board, cell });
       expect(result.board.numFlagsLeft).toBe(board.numFlagsLeft + 1);
     });
 
-    it("unmarks the passed cell", () => {
-      const result = toggleCellMark({ board, cell });
+    it("unflags the passed cell", () => {
+      const result = toggleCellFlag({ board, cell });
       expect(result.board.cells[cell.rowIndex][cell.columnIndex].status).toBe(
         "closed"
       );
     });
   };
 
-  describe("unmark first flag on an unmined cell", () => {
+  describe("unflag first flag on an unmined cell", () => {
     const board: GameBoard = generate000_x1xBoardForTests();
-    board.cells[0][0].status = "marked";
+    board.cells[0][0].status = "flagged";
     board.numFlagsLeft = 1;
-    runTestsForUnmarkingACell({
+    runTestsForUnflaggingACell({
       board,
       cell: board.cells[0][0],
     });
   });
 
-  describe("unmark first flag on a mined cell", () => {
+  describe("unflag first flag on a mined cell", () => {
     const board: GameBoard = generate000_x1xBoardForTests();
-    board.cells[1][0].status = "marked";
+    board.cells[1][0].status = "flagged";
     board.numFlagsLeft = 1;
-    runTestsForUnmarkingACell({
+    runTestsForUnflaggingACell({
       board,
       cell: board.cells[1][0],
     });
   });
 
-  describe("unmark last flag on an unmined cell", () => {
+  describe("unflag last flag on an unmined cell", () => {
     const board: GameBoard = generate000_x1xBoardForTests();
-    board.cells[0][0].status = "marked";
-    board.cells[0][1].status = "marked";
+    board.cells[0][0].status = "flagged";
+    board.cells[0][1].status = "flagged";
     board.numFlagsLeft = 0;
-    runTestsForUnmarkingACell({
+    runTestsForUnflaggingACell({
       board,
       cell: board.cells[0][0],
     });
   });
 
-  describe("unmark last flag on a mined cell", () => {
+  describe("unflag last flag on a mined cell", () => {
     const board: GameBoard = generate000_x1xBoardForTests();
-    board.cells[0][0].status = "marked";
-    board.cells[1][0].status = "marked";
+    board.cells[0][0].status = "flagged";
+    board.cells[1][0].status = "flagged";
     board.numFlagsLeft = 0;
-    runTestsForUnmarkingACell({
+    runTestsForUnflaggingACell({
       board,
       cell: board.cells[1][0],
     });
@@ -206,27 +206,27 @@ describe("toggleCellMark", () => {
     runInvariantTests({ board, cell });
 
     it("does not change the number of flags left", () => {
-      const result = toggleCellMark({ board, cell });
+      const result = toggleCellFlag({ board, cell });
       expect(result.board.numFlagsLeft).toBe(board.numFlagsLeft);
     });
 
     it("does not modify the cell", () => {
-      const result = toggleCellMark({ board, cell });
+      const result = toggleCellFlag({ board, cell });
       expect(result.board.cells[cell.rowIndex][cell.columnIndex]).toEqual(
         board.cells[cell.rowIndex][cell.columnIndex]
       );
     });
 
-    it(`returns triedMarkingTooManyCells: ${expectedTooManyCells}`, () => {
-      const result = toggleCellMark({ board, cell });
-      expect(result.triedMarkingTooManyCells).toBe(expectedTooManyCells);
+    it(`returns triedFlaggingTooManyCells: ${expectedTooManyCells}`, () => {
+      const result = toggleCellFlag({ board, cell });
+      expect(result.triedFlaggingTooManyCells).toBe(expectedTooManyCells);
     });
   };
 
-  describe("trying to mark unmined cell when there are no flags left", () => {
+  describe("trying to flag unmined cell when there are no flags left", () => {
     const board: GameBoard = generate000_x1xBoardForTests();
-    board.cells[0][0].status = "marked";
-    board.cells[1][0].status = "marked";
+    board.cells[0][0].status = "flagged";
+    board.cells[1][0].status = "flagged";
     board.numFlagsLeft = 0;
     runTestsForNoExpectedChange({
       board,
@@ -235,10 +235,10 @@ describe("toggleCellMark", () => {
     });
   });
 
-  describe("trying to mark mined cell when there are no flags left", () => {
+  describe("trying to flag mined cell when there are no flags left", () => {
     const board: GameBoard = generate000_x1xBoardForTests();
-    board.cells[0][0].status = "marked";
-    board.cells[1][0].status = "marked";
+    board.cells[0][0].status = "flagged";
+    board.cells[1][0].status = "flagged";
     board.numFlagsLeft = 0;
     runTestsForNoExpectedChange({
       board,
@@ -247,7 +247,7 @@ describe("toggleCellMark", () => {
     });
   });
 
-  describe("trying to mark open cell", () => {
+  describe("trying to flag open cell", () => {
     const board: GameBoard = generate000_x1xBoardForTests();
     board.cells[0][0].status = "open";
     board.numOpenedCells = 1;

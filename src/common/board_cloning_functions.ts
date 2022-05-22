@@ -6,7 +6,7 @@ export const cloneCells = (cells: GameCell[][]): GameCell[][] =>
 // Cloning cells around (5,5) with a radius 1 in a 10x10 board will just
 // create a deep copy of the (4,4) x (6,6) area and a shallow copy for everything
 // else. This is useful when we have operations that only affect a limited area,
-// such as (for instance) marking a cell, which has radius 0.
+// such as (for instance) flagging a cell, which has radius 0.
 export const cloneCellsAround = ({
   around,
   cells,

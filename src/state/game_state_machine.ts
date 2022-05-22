@@ -7,7 +7,7 @@ import {
 import { handleFirstClick } from "../game_setup/game_start_functions";
 import { openCell } from "../game_rules/open_single_cell_functions";
 import { BoardAndStatus } from "../common/types";
-import { toggleCellMark } from "../game_rules/mark_cell_functions";
+import { toggleCellFlag } from "../game_rules/flag_cell_functions";
 import { clearNeighbors } from "../game_rules/open_neighbors_functions";
 import { generateEmptyBoard } from "../game_setup/board_generation_functions";
 import { boardToBoardWithoutMineInfo } from "../solver/solver_board_conversion_functions";
@@ -16,7 +16,7 @@ export const assignBoardAfterChange: AssignAction<
   GameStateMachineContext,
   DoneInvokeEvent<BoardAndStatus>
 > = assign((_, event) => ({
-  triedMarkingTooManyCells: false,
+  triedFlaggingTooManyCells: false,
   ...event.data.board,
 }));
 
@@ -31,7 +31,7 @@ export const gameStateMachine = createMachine<
     context: {
       ...generateEmptyBoard("easy"),
       isShowingHint: false,
-      triedMarkingTooManyCells: false,
+      triedFlaggingTooManyCells: false,
     },
     states: {
       idle: {
@@ -80,8 +80,8 @@ export const gameStateMachine = createMachine<
             actions: ["disableIsShowingHint"],
             target: "handlingChange",
           },
-          MARK: {
-            actions: ["markCell", "disableIsShowingHint", "requestHint"],
+          FLAG: {
+            actions: ["flagCell", "disableIsShowingHint", "requestHint"],
           },
           SET_HINT: { actions: ["setHint"] },
           SHOW_HINT: { actions: ["enableIsShowingHint"] },
@@ -135,23 +135,23 @@ export const gameStateMachine = createMachine<
       disableIsShowingHint: assign((_) => ({ isShowingHint: false })),
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       enableIsShowingHint: assign((_) => ({ isShowingHint: true })),
+      flagCell: assign((context, event) => {
+        if (event.type !== "FLAG") {
+          throw new Error("tried to flagCell with wrong event type");
+        }
+        const result = toggleCellFlag({ board: context, cell: event.cell });
+        return {
+          ...result.board,
+          triedFlaggingTooManyCells: result.triedFlaggingTooManyCells,
+        };
+      }),
       initBoard: assign((context, event) => {
         if (event.type !== "START") {
           throw new Error("tried to initBoard with wrong event type");
         }
         return {
           ...generateEmptyBoard(event.difficulty),
-          triedMarkingTooManyCells: false,
-        };
-      }),
-      markCell: assign((context, event) => {
-        if (event.type !== "MARK") {
-          throw new Error("tried to markCell with wrong event type");
-        }
-        const result = toggleCellMark({ board: context, cell: event.cell });
-        return {
-          ...result.board,
-          triedMarkingTooManyCells: result.triedMarkingTooManyCells,
+          triedFlaggingTooManyCells: false,
         };
       }),
       requestHint: (context) => {

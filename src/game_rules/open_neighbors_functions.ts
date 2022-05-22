@@ -13,7 +13,7 @@ export const clearNeighbors = ({
   status: oldStatus,
 }: BoardAndCellAndStatus): BoardAndStatus => {
   const wrongCellStatus =
-    oldCell.status !== "marked" && oldCell.status !== "open";
+    oldCell.status !== "flagged" && oldCell.status !== "open";
   const wrongGameStatus = oldStatus !== "playing";
   if (wrongCellStatus || wrongGameStatus) {
     return { board: oldBoard, status: oldStatus };

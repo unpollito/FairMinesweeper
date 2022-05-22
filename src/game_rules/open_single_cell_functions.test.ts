@@ -19,9 +19,9 @@ describe("openCell", () => {
     });
   });
 
-  it("does not change anything if the cell is marked", () => {
+  it("does not change anything if the cell is flagged", () => {
     const board = generate000_x1xBoardForTests();
-    board.cells[0][0].status = "marked";
+    board.cells[0][0].status = "flagged";
     board.numFlagsLeft--;
 
     expect(

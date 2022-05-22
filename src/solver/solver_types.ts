@@ -12,7 +12,7 @@ export interface OpenGameCellWithoutMineInfo
 }
 
 interface NonOpenGameCellWithoutMineInfo extends BaseGameCellWithoutMineInfo {
-  type: "closed" | "marked" | "exploded";
+  type: "closed" | "flagged" | "exploded";
 }
 
 export type GameCellWithoutMineInfo =
@@ -28,16 +28,16 @@ export type RandomChoice = "corner" | "edge" | "middle";
 export type SolverStep =
   | { cells: GameCellWithoutMineInfo[]; choice: RandomChoice; type: "random" }
   | SolverClearNeighborsStep
-  | SolverMarkAroundSingleCellStep
+  | SolverFlagAroundSingleCellStep
   | SolverOpenCellsAfterPartitionStep
-  | SolverMarkCellsAfterPartitionStep
+  | SolverFlagCellsAfterPartitionStep
   | { message: string; type: "error" };
 
-export interface SolverMarkAroundSingleCellStep {
+export interface SolverFlagAroundSingleCellStep {
   around: GameCellWithoutMineInfo;
   cells: GameCellWithoutMineInfo[];
   isPartition: false;
-  type: "mark";
+  type: "flag";
 }
 
 export interface SolverClearNeighborsStep {
@@ -47,13 +47,13 @@ export interface SolverClearNeighborsStep {
   type: "clearNeighbors";
 }
 
-export interface SolverMarkCellsAfterPartitionStep {
+export interface SolverFlagCellsAfterPartitionStep {
   cells: GameCellWithoutMineInfo[];
   commonRegion: GameCellWithoutMineInfo[];
   isPartition: true;
   restrictedCell: GameCellWithoutMineInfo;
   restrictingCell: GameCellWithoutMineInfo;
-  type: "mark";
+  type: "flag";
 }
 
 export interface SolverOpenCellsAfterPartitionStep {

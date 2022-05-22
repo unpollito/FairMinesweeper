@@ -6,28 +6,26 @@ export const getHintText = (hint: SolverStep): string => {
       "The highlighted cell cannot have any more mines around it, " +
       "so it's safe to clear all its unflagged neighbors."
     );
-  } else if (hint.type === "mark") {
+  } else if (hint.type === "flag") {
     if (hint.isPartition) {
       return (
         `Cell ${cellToString(hint.restrictingCell)} ensures that there are ${
           hint.cells.length
         } ` +
-        `mine(s) in ${hint.commonRegion.map(cellToString).join(" + ")}, so ` +
-        `there must be mines in ${hint.cells.map(cellToString).join(" + ")}.`
+        `mine(s) in {${hint.commonRegion.map(cellToString).join(" + ")}}, so ` +
+        `there must be mines in {${hint.cells.map(cellToString).join(" + ")}}.`
       );
     } else {
-      return (
-        "All of the neighbors of the highlighted cell must " + "contain a mine."
-      );
+      return "All of the remaining neighbors of the highlighted cell must contain a mine.";
     }
   } else if (hint.type === "open") {
     return `Cell ${cellToString(hint.restrictingCell)} ensures that there are ${
       hint.cells.length
-    } mines in ${hint.commonRegion
+    } mine(s) in {${hint.commonRegion
       .map(cellToString)
-      .join(", ")}, so there cannot be any mines in ${hint.cells
+      .join(", ")}}, so there cannot be any mines in {${hint.cells
       .map(cellToString)
-      .join(", ")}.`;
+      .join(", ")}}.`;
   } else if (hint.type === "random") {
     if (hint.choice === "corner") {
       return (
@@ -55,7 +53,7 @@ export const getCellToHighlight = (
 ): GameCellWithoutMineInfo | undefined => {
   if (hint.type === "clearNeighbors") {
     return hint.around;
-  } else if (hint.type === "mark") {
+  } else if (hint.type === "flag") {
     if (hint.isPartition) {
       return hint.restrictedCell;
     } else {

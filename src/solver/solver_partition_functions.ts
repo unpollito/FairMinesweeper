@@ -2,14 +2,14 @@ import {
   GameBoardWithoutMineInfo as Board,
   GameCellWithoutMineInfo as Cell,
   OpenGameCellWithoutMineInfo as OpenCell,
-  SolverMarkCellsAfterPartitionStep,
+  SolverFlagCellsAfterPartitionStep,
   SolverOpenCellsAfterPartitionStep,
 } from "./solver_types";
 import { getCellNeighbors } from "../common/cell_neighbor_functions";
 // Partitioning is what I call the process of looking at the restrictions imposed by each cell,
 // figuring out how these affect other cells and splitting (partitioning) the restrictions into
 // separate sets. Ideally we arrive to cell sets where we know that there cannot be any mine
-// (which we can then open) or where all cells contain mines (which we can mark).
+// (which we can then open) or where all cells contain mines (which we can flag).
 //
 // Example (numbers mean open cells with that number of mined neighbors, ? means closed cells):
 //
@@ -33,7 +33,7 @@ import { getCellNeighbors } from "../common/cell_neighbor_functions";
 // the bottom left and bottom middle. Top middle introduces the restriction that there are 2 mines
 // between bottom left, bottom middle and middle right. So we can split this into two restrictions:
 // 1 mine in bottom left and bottom middle (from the top left restriction), and the remaining mine
-// must be in the bottom right. So we can mark bottom right as having a mine.
+// must be in the bottom right. So we can flag bottom right as having a mine.
 interface CellRestrictionPartition {
   affectedCells: Cell[];
   numMines: number;
@@ -48,7 +48,7 @@ export const trySolvingSomePartition = ({
   frontier: OpenCell[];
 }):
   | SolverOpenCellsAfterPartitionStep
-  | SolverMarkCellsAfterPartitionStep
+  | SolverFlagCellsAfterPartitionStep
   | undefined => {
   const partitionMap: Record<
     number,
@@ -58,14 +58,14 @@ export const trySolvingSomePartition = ({
   // First build the original partition for each cell, e.g., all the neighboring closed cells.
   frontier.forEach((cell) => {
     const neighbors = getCellNeighbors({ board, cell });
-    const markedNeighbors = neighbors.filter(
-      (neighbor) => neighbor.status === "marked"
+    const flaggedNeighbors = neighbors.filter(
+      (neighbor) => neighbor.status === "flagged"
     );
     const restrictableCells = neighbors.filter(
       (neighbor) => neighbor.status === "closed"
     );
     const numMinesInRestrictableNeighbors =
-      cell.numNeighborsWithMines - markedNeighbors.length;
+      cell.numNeighborsWithMines - flaggedNeighbors.length;
     if (!partitionMap[cell.rowIndex]) {
       partitionMap[cell.rowIndex] = {};
     }
@@ -126,7 +126,7 @@ export const trySolvingSomePartition = ({
                   type:
                     numMinesInCellMinusNeighborPartition === 0
                       ? "open"
-                      : "mark",
+                      : "flag",
                 };
               }
             }
@@ -148,7 +148,7 @@ export const trySolvingSomePartition = ({
                   type:
                     numMinesInNeighborMinusCellPartition === 0
                       ? "open"
-                      : "mark",
+                      : "flag",
                 };
               }
             }

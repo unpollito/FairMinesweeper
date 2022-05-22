@@ -40,7 +40,7 @@
   // src/solver/solver_helper_functions.ts
   var getFrontier = (board) => board.cells.map((row) => row.map((cell) => {
     if (cell.status === "open") {
-      if (getCellNeighbors({ board, cell }).some((cell2) => cell2.status !== "open" && cell2.status !== "marked")) {
+      if (getCellNeighbors({ board, cell }).some((cell2) => cell2.status !== "open" && cell2.status !== "flagged")) {
         return cell;
       }
     }
@@ -83,7 +83,7 @@
   var canChooseRandomCell = ({
     board,
     cell
-  }) => cell.status === "closed" && getCellNeighbors({ board, cell }).every((neighbor) => neighbor.status === "closed" || neighbor.status === "marked");
+  }) => cell.status === "closed" && getCellNeighbors({ board, cell }).every((neighbor) => neighbor.status === "closed" || neighbor.status === "flagged");
 
   // src/solver/solver_solve_cell_functions.ts
   var trySolvingSomeCell = ({
@@ -91,36 +91,34 @@
     frontier
   }) => {
     const possibleClearSteps = [];
-    const possibleMarkSteps = [];
+    const possibleFlagSteps = [];
     for (const cell of frontier) {
-      if (cell.status === "open") {
-        const neighbors = getCellNeighbors({ board, cell });
-        const closedNeighbors = neighbors.filter((neighbor) => neighbor.status === "closed");
-        const markedNeighbors = neighbors.filter((neighbor) => neighbor.status === "marked");
-        if (closedNeighbors.length + markedNeighbors.length === cell.numNeighborsWithMines) {
-          possibleMarkSteps.push({
-            around: cell,
-            cells: closedNeighbors,
-            isPartition: false,
-            type: "mark"
-          });
-        }
-        if (markedNeighbors.length === cell.numNeighborsWithMines && closedNeighbors.length) {
-          possibleClearSteps.push({
-            around: cell,
-            cells: closedNeighbors,
-            isPartition: false,
-            type: "clearNeighbors"
-          });
-        }
+      const neighbors = getCellNeighbors({ board, cell });
+      const closedNeighbors = neighbors.filter((neighbor) => neighbor.status === "closed");
+      const flaggedNeighbors = neighbors.filter((neighbor) => neighbor.status === "flagged");
+      if (closedNeighbors.length + flaggedNeighbors.length === cell.numNeighborsWithMines) {
+        possibleFlagSteps.push({
+          around: cell,
+          cells: closedNeighbors,
+          isPartition: false,
+          type: "flag"
+        });
+      }
+      if (flaggedNeighbors.length === cell.numNeighborsWithMines && closedNeighbors.length) {
+        possibleClearSteps.push({
+          around: cell,
+          cells: closedNeighbors,
+          isPartition: false,
+          type: "clearNeighbors"
+        });
       }
     }
     if (possibleClearSteps.length > 0) {
       possibleClearSteps.sort((a, b) => b.cells.length - a.cells.length);
       return possibleClearSteps[0];
     }
-    possibleMarkSteps.sort((a, b) => b.cells.length - a.cells.length);
-    return possibleMarkSteps[0];
+    possibleFlagSteps.sort((a, b) => b.cells.length - a.cells.length);
+    return possibleFlagSteps[0];
   };
 
   // src/solver/solver_partition_functions.ts
@@ -132,9 +130,9 @@
     const partitionMap = {};
     frontier.forEach((cell) => {
       const neighbors = getCellNeighbors({ board, cell });
-      const markedNeighbors = neighbors.filter((neighbor) => neighbor.status === "marked");
+      const flaggedNeighbors = neighbors.filter((neighbor) => neighbor.status === "flagged");
       const restrictableCells = neighbors.filter((neighbor) => neighbor.status === "closed");
-      const numMinesInRestrictableNeighbors = cell.numNeighborsWithMines - markedNeighbors.length;
+      const numMinesInRestrictableNeighbors = cell.numNeighborsWithMines - flaggedNeighbors.length;
       if (!partitionMap[cell.rowIndex]) {
         partitionMap[cell.rowIndex] = {};
       }
@@ -167,7 +165,7 @@
                     isPartition: true,
                     restrictedCell: cell,
                     restrictingCell: neighbor,
-                    type: numMinesInCellMinusNeighborPartition === 0 ? "open" : "mark"
+                    type: numMinesInCellMinusNeighborPartition === 0 ? "open" : "flag"
                   };
                 }
               }
@@ -180,7 +178,7 @@
                     isPartition: true,
                     restrictedCell: neighbor,
                     restrictingCell: cell,
-                    type: numMinesInNeighborMinusCellPartition === 0 ? "open" : "mark"
+                    type: numMinesInNeighborMinusCellPartition === 0 ? "open" : "flag"
                   };
                 }
               }
@@ -214,7 +212,6 @@
   // src/solver/solver_worker.ts
   onmessage = function(event) {
     const step = processStep(event.data);
-    console.log(JSON.stringify(step));
     postMessage(step);
   };
 })();

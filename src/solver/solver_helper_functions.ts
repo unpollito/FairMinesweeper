@@ -14,7 +14,7 @@ export const getFrontier = (board: Board): OpenCell[] =>
             if (cell.status === "open") {
               if (
                 getCellNeighbors({ board, cell }).some(
-                  (cell) => cell.status !== "open" && cell.status !== "marked"
+                  (cell) => cell.status !== "open" && cell.status !== "flagged"
                 )
               ) {
                 return cell;

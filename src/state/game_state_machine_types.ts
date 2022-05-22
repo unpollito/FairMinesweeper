@@ -7,7 +7,7 @@ export interface GameStateMachineContext extends Omit<GameBoard, "status"> {
   isShowingHint: boolean;
   solverWorker?: Worker;
   startTime?: number;
-  triedMarkingTooManyCells: boolean;
+  triedFlaggingTooManyCells: boolean;
 }
 
 export interface GameStateMachineState {
@@ -27,7 +27,7 @@ export type GameStateMachineEvent =
       difficulty: GameDifficulty;
       type: "START";
     }
-  | { cell: GameCell; type: "MARK" }
+  | { cell: GameCell; type: "FLAG" }
   | { cell: GameCell; type: "CLICK" }
   | { cell: GameCell; type: "CLEAR_NEIGHBORS" }
   | { solverWorker: Worker; type: "SET_SOLVER_WORKER" }

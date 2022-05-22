@@ -27,7 +27,7 @@ export const MinesweeperBoard = ({
           {row.map((cell, cellIndex) => (
             <div
               className={`board__row__cell ${
-                cell.status === "marked" || cell.status === "closed"
+                cell.status === "flagged" || cell.status === "closed"
                   ? "board__row__cell--closed"
                   : ""
               } ${
@@ -47,7 +47,7 @@ export const MinesweeperBoard = ({
               onClick={() => onLeftClick(cell)}
               onContextMenu={(e) => e.preventDefault()}
             >
-              {cell.status === "marked"
+              {cell.status === "flagged"
                 ? "🚩"
                 : cell.status === "exploded"
                 ? "💥"

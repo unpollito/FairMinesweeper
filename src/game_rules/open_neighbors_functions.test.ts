@@ -60,12 +60,12 @@ describe("clearNeighbors", (): void => {
     });
   });
 
-  describe("marked cell and status = won", () => {
+  describe("flagged cell and status = won", () => {
     const board = generate000_x1xBoardForTests();
     board.cells[0][0].status = "open";
     board.cells[0][1].status = "open";
     board.cells[0][2].status = "open";
-    board.cells[1][0].status = "marked";
+    board.cells[1][0].status = "flagged";
     board.cells[0][1].status = "open";
     board.numOpenedCells = 4;
     board.numFlagsLeft = 1;
@@ -76,9 +76,9 @@ describe("clearNeighbors", (): void => {
     });
   });
 
-  describe("marked cell and status = lost", () => {
+  describe("flagged cell and status = lost", () => {
     const board = generate000_x1xBoardForTests();
-    board.cells[1][0].status = "marked";
+    board.cells[1][0].status = "flagged";
     board.cells[1][2].status = "exploded";
     board.numFlagsLeft = 1;
     runTestsForNoChange({
@@ -93,7 +93,7 @@ describe("clearNeighbors", (): void => {
     board.cells[0][0].status = "open";
     board.cells[0][1].status = "open";
     board.cells[0][2].status = "open";
-    board.cells[1][0].status = "marked";
+    board.cells[1][0].status = "flagged";
     board.cells[0][1].status = "open";
     board.numOpenedCells = 4;
     board.numFlagsLeft = 1;
@@ -107,7 +107,7 @@ describe("clearNeighbors", (): void => {
   describe("open cell and status = lost", () => {
     const board = generate000_x1xBoardForTests();
     board.cells[0][0].status = "open";
-    board.cells[1][0].status = "marked";
+    board.cells[1][0].status = "flagged";
     board.cells[1][2].status = "exploded";
     board.numFlagsLeft = 1;
     runTestsForNoChange({
@@ -117,11 +117,11 @@ describe("clearNeighbors", (): void => {
     });
   });
 
-  describe("open cells with all mined neighbors marked and keep playing", () => {
+  describe("open cells with all mined neighbors flagged and keep playing", () => {
     const board = generate0x0x_1x1xBoardForTests();
     board.cells[0][0].status = "open";
-    board.cells[0][1].status = "marked";
-    board.cells[1][1].status = "marked";
+    board.cells[0][1].status = "flagged";
+    board.cells[1][1].status = "flagged";
     board.numOpenedCells = 1;
     board.numFlagsLeft = 2;
 
@@ -145,14 +145,14 @@ describe("clearNeighbors", (): void => {
       expect(openCell).toHaveBeenCalledTimes(3);
     });
 
-    it("opens all unmarked neighbors of the passed cell", () => {
+    it("opens all unflagged neighbors of the passed cell", () => {
       stopMockingOpenCell();
       const result = clearNeighbors(callParams);
       const cells = result.board.cells;
       expect(cells[0][0].status).toBe("open");
-      expect(cells[0][1].status).toBe("marked");
+      expect(cells[0][1].status).toBe("flagged");
       expect(cells[1][0].status).toBe("open");
-      expect(cells[1][1].status).toBe("marked");
+      expect(cells[1][1].status).toBe("flagged");
     });
 
     it("does not open any non-neighbor cells", () => {
@@ -178,10 +178,10 @@ describe("clearNeighbors", (): void => {
     });
   });
 
-  describe("open cells with all mined neighbors marked and win the game", () => {
+  describe("open cells with all mined neighbors flagged and win the game", () => {
     const board = generate000x_11xxBoardForTests();
     board.cells[0][1].status = "open";
-    board.cells[1][2].status = "marked";
+    board.cells[1][2].status = "flagged";
     board.numOpenedCells = 1;
     board.numFlagsLeft = 2;
 
@@ -205,7 +205,7 @@ describe("clearNeighbors", (): void => {
       expect(openCell).toHaveBeenCalledTimes(5);
     });
 
-    it("opens all unmarked neighbors of the passed cell", () => {
+    it("opens all unflagged neighbors of the passed cell", () => {
       stopMockingOpenCell();
       const result = clearNeighbors(callParams);
       const cells = result.board.cells;
@@ -214,7 +214,7 @@ describe("clearNeighbors", (): void => {
       expect(cells[0][2].status).toBe("open");
       expect(cells[1][0].status).toBe("open");
       expect(cells[1][1].status).toBe("open");
-      expect(cells[1][2].status).toBe("marked");
+      expect(cells[1][2].status).toBe("flagged");
     });
 
     it("does not open any non-neighbor cells", () => {
@@ -238,7 +238,7 @@ describe("clearNeighbors", (): void => {
     });
   });
 
-  describe("open cells with a mined neighbors unmarked", () => {
+  describe("open cells with a mined neighbors unflagged", () => {
     const board = generate000x_11xxBoardForTests();
     board.cells[0][1].status = "open";
     board.numOpenedCells = 1;
@@ -263,7 +263,7 @@ describe("clearNeighbors", (): void => {
       expect(openCell).toHaveBeenCalledTimes(5);
     });
 
-    it("opens all unmarked neighbors of the passed cell", () => {
+    it("opens all unflagged neighbors of the passed cell", () => {
       stopMockingOpenCell();
       const result = clearNeighbors(callParams);
       const cells = result.board.cells;

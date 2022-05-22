@@ -1,5 +1,5 @@
 import { interpret, InterpreterStatus } from "xstate";
-import { toggleCellMark } from "../game_rules/mark_cell_functions";
+import { toggleCellFlag } from "../game_rules/flag_cell_functions";
 import { gameStateMachine } from "./game_state_machine";
 import { generateEmptyBoard } from "../game_setup/board_generation_functions";
 import {
@@ -11,7 +11,7 @@ import { clearNeighbors } from "../game_rules/open_neighbors_functions";
 import { BoardAndStatus, GameBoard } from "../common/types";
 import { openCell } from "../game_rules/open_single_cell_functions";
 
-jest.mock("../game_rules/mark_cell_functions");
+jest.mock("../game_rules/flag_cell_functions");
 jest.mock("../game_rules/open_neighbors_functions");
 jest.mock("../game_rules/open_single_cell_functions");
 jest.mock("../game_setup/board_generation_functions");
@@ -100,16 +100,16 @@ describe("gameStateMachine", (): void => {
       expect(service.state.context.endTime).toBeUndefined();
     });
 
-    it("has triedMarkingTooManyCells = false when starting the game", () => {
+    it("has triedFlaggingTooManyCells = false when starting the game", () => {
       service.send({ difficulty: "hard", type: "START" });
-      expect(service.state.context.triedMarkingTooManyCells).toBeFalse();
+      expect(service.state.context.triedFlaggingTooManyCells).toBeFalse();
     });
 
-    it("ignores any MARK events", () => {
+    it("ignores any FLAG events", () => {
       service.send({ difficulty: "hard", type: "START" });
-      service.send({ cell: mockedEmptyBoard.cells[0][0], type: "MARK" });
+      service.send({ cell: mockedEmptyBoard.cells[0][0], type: "FLAG" });
       expect(service.state.matches("beforeFirstClick"));
-      expect(toggleCellMark).not.toHaveBeenCalled();
+      expect(toggleCellFlag).not.toHaveBeenCalled();
     });
 
     it("ignores any CLEAR_NEIGHBORS events", () => {
@@ -154,8 +154,8 @@ describe("gameStateMachine", (): void => {
       );
     });
 
-    it("has triedMarkingTooManyCells = false", () => {
-      expect(service.state.context.triedMarkingTooManyCells).toBeFalse();
+    it("has triedFlaggingTooManyCells = false", () => {
+      expect(service.state.context.triedFlaggingTooManyCells).toBeFalse();
     });
 
     it("goes to the playing state", () => {
@@ -173,26 +173,26 @@ describe("gameStateMachine", (): void => {
       service.send({ cell: mockedEmptyBoard.cells[0][1], type: "CLICK" });
     });
 
-    describe("MARK", () => {
-      const mockedToggleMarkResult = {
+    describe("FLAG", () => {
+      const mockedToggleFlagResult = {
         board: JSON.parse(
           JSON.stringify(mockedBoardAfterFirstClick)
         ) as GameBoard,
-        triedMarkingTooManyCells: false,
+        triedFlaggingTooManyCells: false,
       };
-      mockedToggleMarkResult.board.cells[1][2].status = "marked";
-      mockedToggleMarkResult.board.numFlagsLeft = 2;
+      mockedToggleFlagResult.board.cells[1][2].status = "flagged";
+      mockedToggleFlagResult.board.numFlagsLeft = 2;
 
-      (toggleCellMark as jest.Mock).mockReturnValue(mockedToggleMarkResult);
+      (toggleCellFlag as jest.Mock).mockReturnValue(mockedToggleFlagResult);
 
-      it("invokes toggleCellMark", () => {
-        service.send({ cell: mockedEmptyBoard.cells[1][2], type: "MARK" });
-        expect(toggleCellMark).toHaveBeenCalledTimes(1);
+      it("invokes toggleCellFlag", () => {
+        service.send({ cell: mockedEmptyBoard.cells[1][2], type: "FLAG" });
+        expect(toggleCellFlag).toHaveBeenCalledTimes(1);
       });
 
-      it("sets the board to the values returned by toggleCellMark", () => {
-        service.send({ cell: mockedEmptyBoard.cells[1][2], type: "MARK" });
-        const mockBoard = mockedToggleMarkResult.board;
+      it("sets the board to the values returned by toggleCellFlag", () => {
+        service.send({ cell: mockedEmptyBoard.cells[1][2], type: "FLAG" });
+        const mockBoard = mockedToggleFlagResult.board;
         expect(service.state.context.cells).toEqual(mockBoard.cells);
         expect(service.state.context.numFlagsLeft).toEqual(
           mockBoard.numFlagsLeft
@@ -205,18 +205,18 @@ describe("gameStateMachine", (): void => {
         );
       });
 
-      it("sets triedMarkingTooManyCells to false when returned by toggleCellMark", () => {
-        service.send({ cell: mockedEmptyBoard.cells[1][2], type: "MARK" });
-        expect(service.state.context.triedMarkingTooManyCells).toBeFalse();
+      it("sets triedFlaggingTooManyCells to false when returned by toggleCellFlag", () => {
+        service.send({ cell: mockedEmptyBoard.cells[1][2], type: "FLAG" });
+        expect(service.state.context.triedFlaggingTooManyCells).toBeFalse();
       });
 
-      it("sets triedMarkingTooManyCells to true when returned by toggleCellMark", () => {
-        (toggleCellMark as jest.Mock).mockReturnValueOnce({
-          board: mockedToggleMarkResult.board,
-          triedMarkingTooManyCells: true,
+      it("sets triedFlaggingTooManyCells to true when returned by toggleCellFlag", () => {
+        (toggleCellFlag as jest.Mock).mockReturnValueOnce({
+          board: mockedToggleFlagResult.board,
+          triedFlaggingTooManyCells: true,
         });
-        service.send({ cell: mockedEmptyBoard.cells[1][2], type: "MARK" });
-        expect(service.state.context.triedMarkingTooManyCells).toBeTrue();
+        service.send({ cell: mockedEmptyBoard.cells[1][2], type: "FLAG" });
+        expect(service.state.context.triedFlaggingTooManyCells).toBeTrue();
       });
     });
 
@@ -238,15 +238,15 @@ describe("gameStateMachine", (): void => {
         );
       });
 
-      it("sets triedMarkingTooManyCells = false", async () => {
-        (toggleCellMark as jest.Mock).mockReturnValueOnce({
+      it("sets triedFlaggingTooManyCells = false", async () => {
+        (toggleCellFlag as jest.Mock).mockReturnValueOnce({
           board: mockedBoardAfterFirstClick,
-          triedMarkingTooManyCells: true,
+          triedFlaggingTooManyCells: true,
         });
-        service.send({ cell: mockedEmptyBoard.cells[1][2], type: "MARK" });
+        service.send({ cell: mockedEmptyBoard.cells[1][2], type: "FLAG" });
         service.send({ cell: mockedEmptyBoard.cells[1][1], type: "CLICK" });
         await Promise.resolve();
-        expect(service.state.context.triedMarkingTooManyCells).toBeFalse();
+        expect(service.state.context.triedFlaggingTooManyCells).toBeFalse();
       });
 
       it("invokes openCell", () => {
@@ -305,18 +305,18 @@ describe("gameStateMachine", (): void => {
         );
       });
 
-      it("sets triedMarkingTooManyCells = false", async () => {
-        (toggleCellMark as jest.Mock).mockReturnValueOnce({
+      it("sets triedFlaggingTooManyCells = false", async () => {
+        (toggleCellFlag as jest.Mock).mockReturnValueOnce({
           board: mockedBoardAfterFirstClick,
-          triedMarkingTooManyCells: true,
+          triedFlaggingTooManyCells: true,
         });
-        service.send({ cell: mockedEmptyBoard.cells[1][2], type: "MARK" });
+        service.send({ cell: mockedEmptyBoard.cells[1][2], type: "FLAG" });
         service.send({
           cell: mockedEmptyBoard.cells[1][1],
           type: "CLEAR_NEIGHBORS",
         });
         await Promise.resolve();
-        expect(service.state.context.triedMarkingTooManyCells).toBeFalse();
+        expect(service.state.context.triedFlaggingTooManyCells).toBeFalse();
       });
 
       it("invokes clearNeighbors", () => {
