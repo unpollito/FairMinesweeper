@@ -5,32 +5,12 @@ import { useMachine } from "@xstate/react";
 import { GameDifficulty } from "./common/types";
 import { MinesweeperBoard } from "./MinesweeperBoard";
 import { secondsToFormattedString } from "./time/time_functions";
-import { SolverStep } from "./solver/solver_types";
 import { HintSection } from "./HintSection";
 
 export const Minesweeper = (): React.ReactElement => {
   const [state, send] = useMachine(gameStateMachine);
   const [gameTimeInSeconds, setGameTimeInSeconds] = useState(0);
   const timeIntervalHandle = useRef<number | undefined>(undefined);
-
-  useEffect(() => {
-    const solverWorker = new Worker("solver_worker.js");
-
-    send({ solverWorker, type: "SET_SOLVER_WORKER" });
-
-    solverWorker.addEventListener(
-      "message",
-      (event: MessageEvent<SolverStep>) => {
-        if (event.data.type !== "error") {
-          send({ hint: event.data, type: "SET_HINT" });
-        }
-      }
-    );
-
-    return () => {
-      solverWorker.terminate();
-    };
-  }, []);
 
   useEffect(() => {
     if (
@@ -92,9 +72,7 @@ export const Minesweeper = (): React.ReactElement => {
           <>
             <MinesweeperBoard
               board={state.context}
-              hint={
-                state.context.isShowingHint ? state.context.hint : undefined
-              }
+              hint={state.context.hint}
               onLeftClick={(cell) => send({ cell, type: "CLICK" })}
               onMiddleClick={(cell) => send({ cell, type: "CLEAR_NEIGHBORS" })}
               onRightClick={(cell) => send({ cell, type: "FLAG" })}
@@ -114,9 +92,7 @@ export const Minesweeper = (): React.ReactElement => {
               </p>
             </div>
             <HintSection
-              hint={
-                state.context.isShowingHint ? state.context.hint : undefined
-              }
+              hint={state.context.hint}
               onRequestHint={() => send({ type: "SHOW_HINT" })}
             />
           </>

@@ -10,6 +10,7 @@ import { BoardAndStatus } from "../common/types";
 import { toggleCellFlag } from "../game_rules/flag_cell_functions";
 import { clearNeighbors } from "../game_rules/open_neighbors_functions";
 import { generateEmptyBoard } from "../game_setup/board_generation_functions";
+import { processStep } from "../solver/solver_logic_functions";
 import { boardToBoardWithoutMineInfo } from "../solver/solver_board_conversion_functions";
 
 export const assignBoardAfterChange: AssignAction<
@@ -30,34 +31,23 @@ export const gameStateMachine = createMachine<
     initial: "idle",
     context: {
       ...generateEmptyBoard("easy"),
-      isShowingHint: false,
       triedFlaggingTooManyCells: false,
     },
     states: {
       idle: {
         on: {
-          SET_SOLVER_WORKER: {
-            actions: ["setSolverWorker"],
-          },
           START: {
             target: "beforeFirstClick",
           },
         },
       },
       beforeFirstClick: {
-        entry: [
-          "initBoard",
-          "setStartTime",
-          "unsetEndTime",
-          "disableIsShowingHint",
-          "requestHint",
-        ],
+        entry: ["initBoard", "setStartTime", "unsetEndTime", "unsetHint"],
         on: {
           CLICK: {
             target: "handlingFirstClick",
           },
-          SET_HINT: { actions: ["setHint"] },
-          SHOW_HINT: { actions: ["enableIsShowingHint"] },
+          SHOW_HINT: { actions: ["setHint"] },
         },
       },
       handlingFirstClick: {
@@ -70,21 +60,20 @@ export const gameStateMachine = createMachine<
         },
       },
       playing: {
-        entry: ["disableIsShowingHint", "requestHint"],
+        entry: ["unsetHint"],
         on: {
           CLEAR_NEIGHBORS: {
-            actions: ["disableIsShowingHint"],
+            actions: ["unsetHint"],
             target: "handlingChange",
           },
           CLICK: {
-            actions: ["disableIsShowingHint"],
+            actions: ["unsetHint"],
             target: "handlingChange",
           },
           FLAG: {
-            actions: ["flagCell", "disableIsShowingHint", "requestHint"],
+            actions: ["flagCell", "unsetHint"],
           },
-          SET_HINT: { actions: ["setHint"] },
-          SHOW_HINT: { actions: ["enableIsShowingHint"] },
+          SHOW_HINT: { actions: ["setHint"] },
         },
       },
       handlingChange: {
@@ -131,10 +120,6 @@ export const gameStateMachine = createMachine<
     actions: {
       // Need to put up with this or else I get compilation errors because XState's types
       // are brittle.
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      disableIsShowingHint: assign((_) => ({ isShowingHint: false })),
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      enableIsShowingHint: assign((_) => ({ isShowingHint: true })),
       flagCell: assign((context, event) => {
         if (event.type !== "FLAG") {
           throw new Error("tried to flagCell with wrong event type");
@@ -154,34 +139,17 @@ export const gameStateMachine = createMachine<
           triedFlaggingTooManyCells: false,
         };
       }),
-      requestHint: (context) => {
-        context.solverWorker?.postMessage(
-          boardToBoardWithoutMineInfo({
-            cells: context.cells,
-            numFlagsLeft: context.numFlagsLeft,
-            numOpenedCells: context.numOpenedCells,
-            numTotalMines: context.numTotalMines,
-          })
-        );
-      },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       setEndTime: assign((_) => ({ endTime: Date.now() })),
-      setHint: assign((context, event) => {
-        if (event.type !== "SET_HINT") {
-          throw new Error("tried to setHint with wrong event type");
-        }
-        return { hint: event.hint };
-      }),
-      setSolverWorker: assign((_, event) => {
-        if (event.type !== "SET_SOLVER_WORKER") {
-          throw new Error("tried to setSolverWorker with wrong event type");
-        }
-        return { solverWorker: event.solverWorker };
-      }),
+      setHint: assign((context) => ({
+        hint: processStep(boardToBoardWithoutMineInfo(context)),
+      })),
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       setStartTime: assign((_) => ({ startTime: Date.now() })),
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       unsetEndTime: assign((_) => ({ endTime: undefined })),
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      unsetHint: assign((_) => ({ hint: undefined })),
     },
     services: {
       handleChange: (context, event) => {

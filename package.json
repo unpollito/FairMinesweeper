@@ -11,7 +11,6 @@
     "@types/react": "^18.0.9",
     "@types/react-dom": "^18.0.4",
     "@xstate/react": "^3.0.0",
-    "esbuild": "0.14.39",
     "react": "^18.1.0",
     "react-dom": "^18.1.0",
     "react-scripts": "5.0.1",
@@ -40,8 +39,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "prepare": "husky install",
-    "build-worker": "esbuild src/solver/solver_worker.ts --bundle --outfile=public/solver_worker.js"
+    "prepare": "husky install"
   },
   "eslintConfig": {
     "extends": [
