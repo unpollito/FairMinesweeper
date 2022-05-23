@@ -11,7 +11,7 @@ export const getHintText = (hint: SolverStep): string => {
       return (
         `Cell(s) ${cellsToString(
           hint.restrictingCells
-        )} ensure that there are ${hint.cells.length} ` +
+        )} ensure that there are ${hint.numMinesInCommonRegion} ` +
         `mine(s) in ${cellsToString(hint.commonRegion)}, so ` +
         `there must be mines in ${cellsToString(hint.cells)}.`
       );

@@ -18,6 +18,17 @@ export const trySolvingBasedOnNumberOfMines = ({
   const { frontierNeighbors, nonFrontierNeighbors } =
     splitClosedMinesByFrontierNeighborhood({ board, frontier });
 
+  // Since this runs an exhaustive search, I'm choosing to cap the number of items
+  // that we can search in to avoid this becoming very slow. In some cases it took
+  // several seconds to complete the search.
+  if (
+    nonFrontierNeighbors.length > 15 ||
+    frontierNeighbors.length > 15 ||
+    board.numTotalMines > 10
+  ) {
+    return undefined;
+  }
+
   const solutions: GameCellWithoutMineInfo[][] = solveMineLocations({
     board,
     frontier,

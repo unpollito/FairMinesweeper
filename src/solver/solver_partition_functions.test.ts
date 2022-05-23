@@ -222,6 +222,7 @@ describe("trySolvingSomePartition", () => {
         solvableBoardFlagOne.cells[1][0],
         solvableBoardFlagOne.cells[1][1],
       ],
+      numMinesInCommonRegion: 1,
       reason: "partition",
       restrictedCells: [solvableBoardFlagOne.cells[0][1]],
       restrictingCells: [solvableBoardFlagOne.cells[0][0]],

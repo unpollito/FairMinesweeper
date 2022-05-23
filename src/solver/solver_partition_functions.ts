@@ -163,13 +163,13 @@ const performRecursivePartitionCheck = (
                 const base = {
                   cells: aMinusBCells,
                   commonRegion: intersectionCells,
+                  numMinesInCommonRegion: numMinesInIntersection,
                   restrictedCells: partitionA.originCells,
                   restrictingCells: partitionB.originCells,
                 };
                 return numMinesInAMinusBPartition === 0
                   ? {
                       ...base,
-                      numMinesInCommonRegion: numMinesInIntersection,
                       type: "open",
                     }
                   : {
@@ -187,13 +187,13 @@ const performRecursivePartitionCheck = (
                 const base = {
                   cells: bMinusACells,
                   commonRegion: intersectionCells,
+                  numMinesInCommonRegion: numMinesInIntersection,
                   restrictedCells: partitionB.originCells,
                   restrictingCells: partitionA.originCells,
                 };
                 return numMinesInBMinusAPartition === 0
                   ? {
                       ...base,
-                      numMinesInCommonRegion: numMinesInIntersection,
                       type: "open",
                     }
                   : {

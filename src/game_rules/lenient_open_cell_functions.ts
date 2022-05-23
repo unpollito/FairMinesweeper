@@ -15,10 +15,7 @@ import {
   cloneCells,
   cloneCellsAround,
 } from "../common/board_cloning_functions";
-import {
-  GameCellWithoutMineInfo,
-  OpenGameCellWithoutMineInfo,
-} from "../solver/solver_types";
+import { GameCellWithoutMineInfo } from "../solver/solver_types";
 import { solveMineLocations } from "../solver/solve_number_of_mines_functions";
 import { getCellNeighbors } from "../common/cell_neighbor_functions";
 import { getRandomInteger } from "../common/random_util_functions";
@@ -71,12 +68,15 @@ export const getAlternativeMineDisposition = ({
   };
   const cell = board.cells[originalCell.rowIndex][originalCell.columnIndex];
   const frontier = getFrontier(board);
-  frontier.splice(frontier.indexOf(cell as OpenGameCellWithoutMineInfo), 1);
-  board.numFlagsLeft--;
   cell.status = "closed";
 
   const { frontierNeighbors, nonFrontierNeighbors } =
     splitClosedMinesByFrontierNeighborhood({ board, frontier });
+  if (frontierNeighbors.indexOf(cell) > -1) {
+    frontierNeighbors.splice(frontierNeighbors.indexOf(cell), 1);
+  } else {
+    nonFrontierNeighbors.splice(nonFrontierNeighbors.indexOf(cell), 1);
+  }
 
   const solutions = solveMineLocations({
     board,
@@ -134,7 +134,7 @@ const getChangedBoardBasedOnAlternativeSolution = ({
       ...cellsToMine,
       ...chooseNAtRandom({
         items: nonFrontierNeighbors,
-        n: board.numFlagsLeft - frontierNeighbors.length,
+        n: board.numFlagsLeft - solution.length,
       }),
     ];
   }

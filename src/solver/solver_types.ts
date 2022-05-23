@@ -57,6 +57,7 @@ export interface SolverClearNeighborsStep {
 export interface SolverFlagCellsAfterPartitionStep {
   cells: GameCellWithoutMineInfo[];
   commonRegion: GameCellWithoutMineInfo[];
+  numMinesInCommonRegion: number;
   reason: "partition";
   restrictedCells: GameCellWithoutMineInfo[];
   restrictingCells: GameCellWithoutMineInfo[];
