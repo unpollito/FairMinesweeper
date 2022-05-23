@@ -18,17 +18,6 @@ export const trySolvingBasedOnNumberOfMines = ({
   const { frontierNeighbors, nonFrontierNeighbors } =
     splitClosedMinesByFrontierNeighborhood({ board, frontier });
 
-  // Since this runs an exhaustive search, I'm choosing to cap the number of items
-  // that we can search in to avoid this becoming very slow. In some cases it took
-  // several seconds to complete the search.
-  if (
-    nonFrontierNeighbors.length > 15 ||
-    frontierNeighbors.length > 15 ||
-    board.numTotalMines > 10
-  ) {
-    return undefined;
-  }
-
   const solutions: GameCellWithoutMineInfo[][] = solveMineLocations({
     board,
     frontier,
@@ -99,23 +88,10 @@ export const solveMineLocations = ({
   }
 
   const solutions: GameCellWithoutMineInfo[][] = [];
-
-  // For each frontier neighbor we'll try first finding solutions without it mined,
-  // and then see what happens if we place a mine in it.
+  // For each frontier neighbor we'll try first finding solutions with a mine on it,
+  // and then without.
   const frontierNeighborCell = frontierNeighbors[0];
-  const solutionsWithoutMineInCurrentCell = solveMineLocations({
-    board,
-    frontier,
-    frontierNeighbors: frontierNeighbors.slice(1),
-    maxSolutions: maxSolutions - solutions.length,
-    nonFrontierNeighbors,
-  });
-  solutionsWithoutMineInCurrentCell.forEach((solution) => {
-    solutions.push(solution);
-  });
-  if (solutions.length < maxSolutions && board.numFlagsLeft > 0) {
-    // Let's try adding a mine to the current cell and see how this
-    // affects the existing restrictions
+  if (board.numFlagsLeft > 0) {
     const clonedBoardCells = cloneCellsAround({
       around: frontierNeighborCell,
       cells: board.cells,
@@ -158,6 +134,19 @@ export const solveMineLocations = ({
         solutions.push([frontierNeighborCell, ...solution]);
       });
     }
+  }
+
+  if (solutions.length < maxSolutions) {
+    const solutionsWithoutMineInCurrentCell = solveMineLocations({
+      board,
+      frontier,
+      frontierNeighbors: frontierNeighbors.slice(1),
+      maxSolutions: maxSolutions - solutions.length,
+      nonFrontierNeighbors,
+    });
+    solutionsWithoutMineInCurrentCell.forEach((solution) => {
+      solutions.push(solution);
+    });
   }
   return solutions;
 };
