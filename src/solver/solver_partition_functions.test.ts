@@ -203,6 +203,7 @@ describe("trySolvingSomePartition", () => {
         solvableBoardOpenOne.cells[1][0],
         solvableBoardOpenOne.cells[1][1],
       ],
+      numMinesInCommonRegion: 1,
       restrictedCells: [solvableBoardOpenOne.cells[0][1]],
       restrictingCells: [solvableBoardOpenOne.cells[0][0]],
       type: "open",

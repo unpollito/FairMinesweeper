@@ -66,6 +66,7 @@ export interface SolverFlagCellsAfterPartitionStep {
 export interface SolverOpenCellsAfterPartitionStep {
   cells: GameCellWithoutMineInfo[];
   commonRegion: GameCellWithoutMineInfo[];
+  numMinesInCommonRegion: number;
   restrictedCells: GameCellWithoutMineInfo[];
   restrictingCells: GameCellWithoutMineInfo[];
   type: "open";

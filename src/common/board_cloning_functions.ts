@@ -13,7 +13,7 @@ export const cloneCellsAround = <T extends GameCellWithoutMineInfo>({
   cells,
   radius,
 }: {
-  around: GameCellWithoutMineInfo;
+  around: Pick<T, "rowIndex" | "columnIndex">;
   cells: T[][];
   radius: number;
 }): T[][] =>

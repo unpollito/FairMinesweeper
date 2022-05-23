@@ -47,7 +47,7 @@ export const trySolvingBasedOnNumberOfMines = ({
   };
 };
 
-const solveMineLocations = ({
+export const solveMineLocations = ({
   board,
   frontier,
   frontierNeighbors,

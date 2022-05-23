@@ -9,11 +9,11 @@ import {
 import { handleFirstClick } from "../game_setup/game_start_functions";
 import { clearNeighbors } from "../game_rules/open_neighbors_functions";
 import { BoardAndStatus, GameBoard } from "../common/types";
-import { openCell } from "../game_rules/open_single_cell_functions";
+import { lenientOpenCell } from "../game_rules/lenient_open_cell_functions";
 
 jest.mock("../game_rules/flag_cell_functions");
+jest.mock("../game_rules/lenient_open_cell_functions");
 jest.mock("../game_rules/open_neighbors_functions");
-jest.mock("../game_rules/open_single_cell_functions");
 jest.mock("../game_setup/board_generation_functions");
 jest.mock("../game_setup/board_filling_functions");
 jest.mock("../game_setup/game_start_functions");
@@ -233,7 +233,7 @@ describe("gameStateMachine", (): void => {
 
     describe("CLICK", () => {
       beforeEach(() => {
-        (openCell as jest.Mock).mockReturnValue(
+        (lenientOpenCell as jest.Mock).mockReturnValue(
           mockedClickOrClearNeighborsResult
         );
       });
@@ -251,7 +251,7 @@ describe("gameStateMachine", (): void => {
 
       it("invokes openCell", () => {
         service.send({ cell: mockedEmptyBoard.cells[1][1], type: "CLICK" });
-        expect(openCell).toHaveBeenCalledTimes(1);
+        expect(lenientOpenCell).toHaveBeenCalledTimes(1);
       });
 
       it("sets the board as returned by openCell", async (): Promise<void> => {
@@ -278,7 +278,7 @@ describe("gameStateMachine", (): void => {
       });
 
       it("goes to the won state if instructed by openCell", async () => {
-        (openCell as jest.Mock).mockReturnValueOnce({
+        (lenientOpenCell as jest.Mock).mockReturnValueOnce({
           board: mockedBoardAfterClickOrClearNeighbors,
           status: "won",
         });
@@ -288,7 +288,7 @@ describe("gameStateMachine", (): void => {
       });
 
       it("goes to the lost state if instructed by openCell", async () => {
-        (openCell as jest.Mock).mockReturnValueOnce({
+        (lenientOpenCell as jest.Mock).mockReturnValueOnce({
           board: mockedBoardAfterClickOrClearNeighbors,
           status: "lost",
         });
@@ -386,7 +386,7 @@ describe("gameStateMachine", (): void => {
 
   describe("won", () => {
     beforeEach(async () => {
-      (openCell as jest.Mock).mockReturnValue({
+      (lenientOpenCell as jest.Mock).mockReturnValue({
         board: mockedBoardAfterFirstClick,
         status: "won",
       });
@@ -440,7 +440,7 @@ describe("gameStateMachine", (): void => {
 
   describe("lost", () => {
     beforeEach(async () => {
-      (openCell as jest.Mock).mockReturnValue({
+      (lenientOpenCell as jest.Mock).mockReturnValue({
         board: mockedBoardAfterFirstClick,
         status: "lost",
       });

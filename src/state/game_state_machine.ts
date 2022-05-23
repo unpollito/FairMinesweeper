@@ -5,13 +5,13 @@ import {
   GameStateMachineState,
 } from "./game_state_machine_types";
 import { handleFirstClick } from "../game_setup/game_start_functions";
-import { openCell } from "../game_rules/open_single_cell_functions";
 import { BoardAndStatus } from "../common/types";
 import { toggleCellFlag } from "../game_rules/flag_cell_functions";
 import { clearNeighbors } from "../game_rules/open_neighbors_functions";
 import { generateEmptyBoard } from "../game_setup/board_generation_functions";
 import { processStep } from "../solver/solver_logic_functions";
 import { boardToBoardWithoutMineInfo } from "../solver/solver_board_conversion_functions";
+import { lenientOpenCell } from "../game_rules/lenient_open_cell_functions";
 
 export const assignBoardAfterChange: AssignAction<
   GameStateMachineContext,
@@ -163,7 +163,11 @@ export const gameStateMachine = createMachine<
           );
         } else if (event.type === "CLICK") {
           return Promise.resolve(
-            openCell({ board: context, cell: event.cell, status: "playing" })
+            lenientOpenCell({
+              board: context,
+              cell: event.cell,
+              status: "playing",
+            })
           );
         } else {
           throw new Error("invoked handleChange with wrong event type");

@@ -169,6 +169,7 @@ const performRecursivePartitionCheck = (
                 return numMinesInAMinusBPartition === 0
                   ? {
                       ...base,
+                      numMinesInCommonRegion: numMinesInIntersection,
                       type: "open",
                     }
                   : {
@@ -192,6 +193,7 @@ const performRecursivePartitionCheck = (
                 return numMinesInBMinusAPartition === 0
                   ? {
                       ...base,
+                      numMinesInCommonRegion: numMinesInIntersection,
                       type: "open",
                     }
                   : {

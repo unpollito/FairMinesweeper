@@ -9,9 +9,9 @@ export const getHintText = (hint: SolverStep): string => {
   } else if (hint.type === "flag") {
     if (hint.reason === "partition") {
       return (
-        `Cells ${cellsToString(hint.restrictingCells)} ensures that there are ${
-          hint.cells.length
-        } ` +
+        `Cell(s) ${cellsToString(
+          hint.restrictingCells
+        )} ensure that there are ${hint.cells.length} ` +
         `mine(s) in ${cellsToString(hint.commonRegion)}, so ` +
         `there must be mines in ${cellsToString(hint.cells)}.`
       );
@@ -26,7 +26,9 @@ export const getHintText = (hint: SolverStep): string => {
   } else if (hint.type === "open") {
     return `Cell ${cellsToString(
       hint.restrictingCells
-    )} ensures that there are ${hint.cells.length} mine(s) in ${cellsToString(
+    )} ensures that there are ${
+      hint.numMinesInCommonRegion
+    } mine(s) in ${cellsToString(
       hint.commonRegion
     )}, so there cannot be any mines in ${cellsToString(hint.cells)}.`;
   } else if (hint.type === "random") {
