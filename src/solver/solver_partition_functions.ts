@@ -17,11 +17,11 @@ import { getCellNeighbors } from "../common/cell_neighbor_functions";
 //   ???
 //
 // In the above example, the top left cell introduces the restriction that there must be exactly
-// 1 mine in the bottom left and bottom middle cells. The top middle cell has a restriction that
-// there is exactly 1 mine in the bottom left, bottom middle and bottom right cells. So we can
-// split this restriction into two parts: one for the bottom left and the bottom middle, and
+// 1 mine in the bottom left and bottom center cells. The top center cell has a restriction that
+// there is exactly 1 mine in the bottom left, bottom center and bottom right cells. So we can
+// split this restriction into two parts: one for the bottom left and the bottom center, and
 // another for the bottom right. Since we already had a restriction from the left cell that
-// there was a mine in the bottom left or bottom middle, the remaining cell (bottom right) cannot
+// there was a mine in the bottom left or bottom center, the remaining cell (bottom right) cannot
 // have a mine, thus we can open it.
 //
 // Another example:
@@ -30,14 +30,26 @@ import { getCellNeighbors } from "../common/cell_neighbor_functions";
 //   ???
 //
 // In this example, again, top left introduces the restriction that there can be only 1 mine in
-// the bottom left and bottom middle. Top middle introduces the restriction that there are 2 mines
-// between bottom left, bottom middle and middle right. So we can split this into two restrictions:
-// 1 mine in bottom left and bottom middle (from the top left restriction), and the remaining mine
+// the bottom left and bottom center. Top center introduces the restriction that there are 2 mines
+// between bottom left, bottom center and center right. So we can split this into two restrictions:
+// 1 mine in bottom left and bottom center (from the top left restriction), and the remaining mine
 // must be in the bottom right. So we can flag bottom right as having a mine.
+//
+// One more example with two restrictions:
+//
+// ???
+// 12?
+// 01?
+//
+// In this example, middle left introduces the restriction that there can only be 1 mine in the
+// top right or top center columns, which means that for the other 3 neighbors of middle center
+// (that is, the right column), there can only be 1 mine. But then you look at the restriction
+// introduced by bottom center, which says that there can only be 1 mine in middle right or
+// bottom right. Thus top right cannot contain a mine.
 interface CellRestrictionPartition {
   affectedCells: Cell[];
   numMines: number;
-  originCell: OpenCell;
+  originCells: OpenCell[];
 }
 
 export const trySolvingSomePartition = ({
@@ -50,13 +62,8 @@ export const trySolvingSomePartition = ({
   | SolverOpenCellsAfterPartitionStep
   | SolverFlagCellsAfterPartitionStep
   | undefined => {
-  const partitionMap: Record<
-    number,
-    Record<number, CellRestrictionPartition>
-  > = {};
-
   // First build the original partition for each cell, e.g., all the neighboring closed cells.
-  frontier.forEach((cell) => {
+  const partitions: CellRestrictionPartition[] = frontier.map((cell) => {
     const neighbors = getCellNeighbors({ board, cell });
     const flaggedNeighbors = neighbors.filter(
       (neighbor) => neighbor.status === "flagged"
@@ -66,64 +73,123 @@ export const trySolvingSomePartition = ({
     );
     const numMinesInRestrictableNeighbors =
       cell.numNeighborsWithMines - flaggedNeighbors.length;
-    if (!partitionMap[cell.rowIndex]) {
-      partitionMap[cell.rowIndex] = {};
-    }
-    partitionMap[cell.rowIndex][cell.columnIndex] = {
+    return {
       affectedCells: restrictableCells,
       numMines: numMinesInRestrictableNeighbors,
-      originCell: cell,
+      originCells: [cell],
     };
   });
 
-  // Then compare each cell against its neighbors to see which restrictions we can get.
-  for (const cell of frontier) {
-    const cellPartition = partitionMap[cell.rowIndex][cell.columnIndex];
-    const neighbors = getCellNeighbors({ board, cell });
-    for (const neighbor of neighbors) {
-      const neighborPartition =
-        partitionMap[neighbor.rowIndex]?.[neighbor.columnIndex];
-      // Prevent comparing the partitions of (B,A) and (A,B); only check each pair once.
-      const neighborComesAfterCell =
-        neighbor.rowIndex > cell.rowIndex ||
-        (neighbor.rowIndex === cell.rowIndex &&
-          neighbor.columnIndex > cell.columnIndex);
-      if (!!neighborPartition && neighborComesAfterCell) {
-        const intersectionCells = cellPartition.affectedCells.filter((cell) =>
-          neighborPartition.affectedCells.includes(cell)
+  return performRecursivePartitionCheck(partitions);
+};
+
+const performRecursivePartitionCheck = (
+  partitions: CellRestrictionPartition[],
+  alreadyCheckedPartitions: Map<
+    CellRestrictionPartition,
+    Set<CellRestrictionPartition>
+  > = new Map()
+):
+  | SolverOpenCellsAfterPartitionStep
+  | SolverFlagCellsAfterPartitionStep
+  | undefined => {
+  for (const [partitionAIndex, partitionA] of partitions.entries()) {
+    for (const [partitionBPartialIndex, partitionB] of partitions
+      .slice(partitionAIndex + 1)
+      .entries()) {
+      const wasThisPairChecked = alreadyCheckedPartitions
+        .get(partitionA)
+        ?.has(partitionB);
+      if (!wasThisPairChecked) {
+        markPairAsChecked({ alreadyCheckedPartitions, partitionA, partitionB });
+
+        const partitionBIndex = partitionAIndex + 1 + partitionBPartialIndex;
+        const intersectionCells = partitionA.affectedCells.filter((cell) =>
+          partitionB.affectedCells.includes(cell)
         );
         if (intersectionCells.length > 0) {
-          const cellMinusNeighborCells = cellPartition.affectedCells.filter(
-            (cell) => !neighborPartition.affectedCells.includes(cell)
+          const aMinusBCells = partitionA.affectedCells.filter(
+            (cell) => !intersectionCells.includes(cell)
           );
-          const neighborMinusCellCells = neighborPartition.affectedCells.filter(
-            (cell) => !cellPartition.affectedCells.includes(cell)
+          const bMinusACells = partitionB.affectedCells.filter(
+            (cell) => !intersectionCells.includes(cell)
+          );
+          const maxBoundsForCellsInPartitionA = partitionA.originCells.map(
+            (originCell) =>
+              originCell.numNeighborsWithMines -
+              partitions
+                .filter(
+                  (partition) =>
+                    partition.originCells.includes(originCell) &&
+                    partition !== partitionA
+                )
+                .map((partition) => partition.numMines)
+                .reduce((a, b) => a + b, 0)
+          );
+          const maxBoundsForCellsInPartitionB = partitionB.originCells.map(
+            (originCell) =>
+              originCell.numNeighborsWithMines -
+              partitions
+                .filter(
+                  (partition) =>
+                    partition.originCells.includes(originCell) &&
+                    partition !== partitionB
+                )
+                .map((partition) => partition.numMines)
+                .reduce((a, b) => a + b, 0)
           );
           const minMinesInIntersection = Math.max(
-            neighborPartition.numMines - neighborMinusCellCells.length,
-            cellPartition.numMines - cellMinusNeighborCells.length
+            partitionA.numMines - aMinusBCells.length,
+            partitionB.numMines - bMinusACells.length
           );
-          const maxMinesInIntersection = Math.min(
-            (neighbor as OpenCell).numNeighborsWithMines,
-            cell.numNeighborsWithMines,
-            intersectionCells.length
-          );
+          const maxMinesInIntersection = Math.min.apply(this, [
+            intersectionCells.length,
+            ...maxBoundsForCellsInPartitionA,
+            ...maxBoundsForCellsInPartitionB,
+          ]);
+
           if (minMinesInIntersection === maxMinesInIntersection) {
-            if (cellMinusNeighborCells.length > 0) {
-              const numMinesInCellMinusNeighborPartition =
-                cellPartition.numMines - minMinesInIntersection;
+            const numMinesInIntersection = minMinesInIntersection;
+            const numMinesInAMinusBPartition =
+              partitionA.numMines - minMinesInIntersection;
+            const numMinesInBMinusAPartition =
+              partitionB.numMines - minMinesInIntersection;
+
+            if (aMinusBCells.length > 0) {
               if (
-                numMinesInCellMinusNeighborPartition ===
-                  cellMinusNeighborCells.length ||
-                numMinesInCellMinusNeighborPartition === 0
+                numMinesInAMinusBPartition === aMinusBCells.length ||
+                numMinesInAMinusBPartition === 0
               ) {
                 const base = {
-                  cells: cellMinusNeighborCells,
+                  cells: aMinusBCells,
                   commonRegion: intersectionCells,
-                  restrictedCell: cell,
-                  restrictingCell: neighbor,
+                  restrictedCells: partitionA.originCells,
+                  restrictingCells: partitionB.originCells,
                 };
-                return numMinesInCellMinusNeighborPartition === 0
+                return numMinesInAMinusBPartition === 0
+                  ? {
+                      ...base,
+                      type: "open",
+                    }
+                  : {
+                      ...base,
+                      reason: "partition",
+                      type: "flag",
+                    };
+              }
+            }
+            if (bMinusACells.length > 0) {
+              if (
+                numMinesInBMinusAPartition === bMinusACells.length ||
+                numMinesInBMinusAPartition === 0
+              ) {
+                const base = {
+                  cells: bMinusACells,
+                  commonRegion: intersectionCells,
+                  restrictedCells: partitionB.originCells,
+                  restrictingCells: partitionA.originCells,
+                };
+                return numMinesInBMinusAPartition === 0
                   ? {
                       ...base,
                       type: "open",
@@ -136,36 +202,69 @@ export const trySolvingSomePartition = ({
               }
             }
 
-            if (neighborMinusCellCells.length > 0) {
-              const numMinesInNeighborMinusCellPartition =
-                neighborPartition.numMines - minMinesInIntersection;
-              if (
-                numMinesInNeighborMinusCellPartition ===
-                  neighborMinusCellCells.length ||
-                numMinesInNeighborMinusCellPartition === 0
-              ) {
-                const base = {
-                  cells: neighborMinusCellCells,
-                  commonRegion: intersectionCells,
-                  restrictedCell: neighbor,
-                  restrictingCell: cell,
-                };
-                return numMinesInNeighborMinusCellPartition === 0
-                  ? {
-                      ...base,
-                      type: "open",
-                    }
-                  : {
-                      ...base,
-                      reason: "partition",
-                      type: "flag",
-                    };
-              }
-            }
+            let newPartitions = partitions.slice();
+            newPartitions.splice(partitionBIndex, 1);
+            newPartitions.splice(partitionAIndex, 1);
+            const intersectionOriginCells = [
+              ...partitionA.originCells,
+              ...partitionB.originCells,
+            ];
+            intersectionOriginCells.filter(
+              (cell, cellIndex) =>
+                !intersectionOriginCells.slice(cellIndex + 1).includes(cell)
+            );
+            newPartitions = [
+              {
+                affectedCells: intersectionCells,
+                numMines: numMinesInIntersection,
+                originCells: intersectionOriginCells,
+              },
+              {
+                affectedCells: aMinusBCells,
+                numMines: numMinesInAMinusBPartition,
+                originCells: partitionA.originCells,
+              },
+              {
+                affectedCells: bMinusACells,
+                numMines: numMinesInBMinusAPartition,
+                originCells: partitionB.originCells,
+              },
+              ...newPartitions,
+            ];
+            return performRecursivePartitionCheck(
+              newPartitions,
+              alreadyCheckedPartitions
+            );
           }
         }
       }
     }
   }
-  return undefined;
+};
+
+const markPairAsChecked = ({
+  alreadyCheckedPartitions,
+  partitionA,
+  partitionB,
+}: {
+  alreadyCheckedPartitions: Map<
+    CellRestrictionPartition,
+    Set<CellRestrictionPartition>
+  >;
+  partitionA: CellRestrictionPartition;
+  partitionB: CellRestrictionPartition;
+}): void => {
+  let aSet = alreadyCheckedPartitions.get(partitionA);
+  if (!aSet) {
+    aSet = new Set<CellRestrictionPartition>();
+    alreadyCheckedPartitions.set(partitionA, aSet);
+  }
+  aSet.add(partitionB);
+
+  let bSet = alreadyCheckedPartitions.get(partitionB);
+  if (!bSet) {
+    bSet = new Set<CellRestrictionPartition>();
+    alreadyCheckedPartitions.set(partitionB, bSet);
+  }
+  bSet.add(partitionA);
 };

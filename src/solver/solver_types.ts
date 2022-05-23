@@ -58,15 +58,15 @@ export interface SolverFlagCellsAfterPartitionStep {
   cells: GameCellWithoutMineInfo[];
   commonRegion: GameCellWithoutMineInfo[];
   reason: "partition";
-  restrictedCell: GameCellWithoutMineInfo;
-  restrictingCell: GameCellWithoutMineInfo;
+  restrictedCells: GameCellWithoutMineInfo[];
+  restrictingCells: GameCellWithoutMineInfo[];
   type: "flag";
 }
 
 export interface SolverOpenCellsAfterPartitionStep {
   cells: GameCellWithoutMineInfo[];
   commonRegion: GameCellWithoutMineInfo[];
-  restrictedCell: GameCellWithoutMineInfo;
-  restrictingCell: GameCellWithoutMineInfo;
+  restrictedCells: GameCellWithoutMineInfo[];
+  restrictingCells: GameCellWithoutMineInfo[];
   type: "open";
 }
