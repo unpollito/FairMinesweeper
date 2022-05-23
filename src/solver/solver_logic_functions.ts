@@ -32,6 +32,6 @@ export const processStep = (board: Board): SolverStep => {
   if (randomChoice.cells.length > 0) {
     return { ...randomChoice, type: "random" };
   } else {
-    return { message: "Don't know how to proceed", type: "error" };
+    return { error: "Don't know how to proceed", type: "error" };
   }
 };

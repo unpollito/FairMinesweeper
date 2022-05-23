@@ -32,7 +32,7 @@ export type SolverStep =
   | SolverOpenCellsAfterPartitionStep
   | SolverFlagCellsAfterPartitionStep
   | SolverFlagBasedOnTotalNumberOfMines
-  | { message: string; type: "error" };
+  | { error: string; type: "error" };
 
 export interface SolverFlagAroundSingleCellStep {
   around: GameCellWithoutMineInfo;
