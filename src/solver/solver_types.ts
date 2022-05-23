@@ -7,12 +7,12 @@ type BaseGameCellWithoutMineInfo = Omit<
 
 export interface OpenGameCellWithoutMineInfo
   extends BaseGameCellWithoutMineInfo {
-  type: "open";
+  status: "open";
   numNeighborsWithMines: number;
 }
 
 interface NonOpenGameCellWithoutMineInfo extends BaseGameCellWithoutMineInfo {
-  type: "closed" | "flagged" | "exploded";
+  status: "closed" | "flagged" | "exploded";
 }
 
 export type GameCellWithoutMineInfo =
@@ -31,26 +31,33 @@ export type SolverStep =
   | SolverFlagAroundSingleCellStep
   | SolverOpenCellsAfterPartitionStep
   | SolverFlagCellsAfterPartitionStep
+  | SolverFlagBasedOnTotalNumberOfMines
   | { message: string; type: "error" };
 
 export interface SolverFlagAroundSingleCellStep {
   around: GameCellWithoutMineInfo;
   cells: GameCellWithoutMineInfo[];
-  isPartition: false;
+  reason: "singleCell";
+  type: "flag";
+}
+
+export interface SolverFlagBasedOnTotalNumberOfMines {
+  cells: GameCellWithoutMineInfo[];
+  numberOfMines: number;
+  reason: "numberOfMines";
   type: "flag";
 }
 
 export interface SolverClearNeighborsStep {
   around: GameCellWithoutMineInfo;
   cells: GameCellWithoutMineInfo[];
-  isPartition: false;
   type: "clearNeighbors";
 }
 
 export interface SolverFlagCellsAfterPartitionStep {
   cells: GameCellWithoutMineInfo[];
   commonRegion: GameCellWithoutMineInfo[];
-  isPartition: true;
+  reason: "partition";
   restrictedCell: GameCellWithoutMineInfo;
   restrictingCell: GameCellWithoutMineInfo;
   type: "flag";
@@ -59,7 +66,6 @@ export interface SolverFlagCellsAfterPartitionStep {
 export interface SolverOpenCellsAfterPartitionStep {
   cells: GameCellWithoutMineInfo[];
   commonRegion: GameCellWithoutMineInfo[];
-  isPartition: true;
   restrictedCell: GameCellWithoutMineInfo;
   restrictingCell: GameCellWithoutMineInfo;
   type: "open";

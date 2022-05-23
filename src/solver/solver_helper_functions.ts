@@ -1,6 +1,8 @@
 import {
   GameBoardWithoutMineInfo as Board,
+  GameCellWithoutMineInfo,
   GameCellWithoutMineInfo as Cell,
+  OpenGameCellWithoutMineInfo,
   OpenGameCellWithoutMineInfo as OpenCell,
 } from "./solver_types";
 import { getCellNeighbors } from "../common/cell_neighbor_functions";
@@ -61,3 +63,46 @@ export const getBoardMiddleCells = (board: Board): Cell[] =>
       )
     )
     .reduce((a, b) => [...a, ...b], []);
+
+export const splitClosedMinesByFrontierNeighborhood = ({
+  board,
+  frontier,
+}: {
+  board: Board;
+  frontier: OpenGameCellWithoutMineInfo[];
+}): {
+  frontierNeighbors: GameCellWithoutMineInfo[];
+  nonFrontierNeighbors: GameCellWithoutMineInfo[];
+} => {
+  const frontierClosedNeighborsMap: Record<
+    number,
+    Record<number, GameCellWithoutMineInfo>
+  > = {};
+  frontier.forEach((cell) =>
+    getCellNeighbors({ board, cell }).forEach((neighbor) => {
+      if (neighbor.status === "closed") {
+        if (!frontierClosedNeighborsMap[neighbor.rowIndex]) {
+          frontierClosedNeighborsMap[neighbor.rowIndex] = {};
+        }
+        frontierClosedNeighborsMap[neighbor.rowIndex][neighbor.columnIndex] =
+          neighbor;
+      }
+    })
+  );
+
+  const frontierNeighbors: GameCellWithoutMineInfo[] = [];
+  const nonFrontierNeighbors: GameCellWithoutMineInfo[] = [];
+
+  board.cells.forEach((row, rowIndex) =>
+    row.forEach((cell, columnIndex) => {
+      if (cell.status === "closed") {
+        if (frontierClosedNeighborsMap[rowIndex]?.[columnIndex]) {
+          frontierNeighbors.push(cell);
+        } else {
+          nonFrontierNeighbors.push(cell);
+        }
+      }
+    })
+  );
+  return { frontierNeighbors, nonFrontierNeighbors };
+};

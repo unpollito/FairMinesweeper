@@ -2,7 +2,7 @@ import { GameBoard, GameCell } from "./common/types";
 import React from "react";
 import "./MinesweeperBoard.css";
 import { SolverStep } from "./solver/solver_types";
-import { getCellToHighlight } from "./solver/solver_hint_functions";
+import { getCellsToHighlight } from "./solver/solver_hint_functions";
 
 type CellFn = (cell: GameCell) => void;
 
@@ -19,7 +19,7 @@ export const MinesweeperBoard = ({
   onMiddleClick: CellFn;
   onRightClick: CellFn;
 }): React.ReactElement => {
-  const cellToHighlight = hint && getCellToHighlight(hint);
+  const cellsToHighlight = hint ? getCellsToHighlight(hint) : [];
   return (
     <div className={"board"}>
       {board.cells.map((row, rowIndex) => (
@@ -31,8 +31,11 @@ export const MinesweeperBoard = ({
                   ? "board__row__cell--closed"
                   : ""
               } ${
-                cell.rowIndex === cellToHighlight?.rowIndex &&
-                cell.columnIndex === cellToHighlight?.columnIndex
+                cellsToHighlight.some(
+                  (current) =>
+                    current.rowIndex === cell.rowIndex &&
+                    current.columnIndex === cell.columnIndex
+                )
                   ? "board__row__cell--highlighted"
                   : ""
               }`}

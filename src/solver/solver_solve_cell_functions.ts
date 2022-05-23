@@ -31,7 +31,7 @@ export const trySolvingSomeCell = ({
       possibleFlagSteps.push({
         around: cell,
         cells: closedNeighbors,
-        isPartition: false,
+        reason: "singleCell",
         type: "flag",
       });
     }
@@ -42,7 +42,6 @@ export const trySolvingSomeCell = ({
       possibleClearSteps.push({
         around: cell,
         cells: closedNeighbors,
-        isPartition: false,
         type: "clearNeighbors",
       });
     }

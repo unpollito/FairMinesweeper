@@ -65,6 +65,33 @@
     return result;
   };
   var getBoardMiddleCells = (board) => board.cells.filter((row, rowIndex) => rowIndex > 0 && rowIndex < board.cells.length - 1).map((row) => row.filter((cell, columnIndex) => columnIndex > 0 && columnIndex < row.length - 1)).reduce((a, b) => [...a, ...b], []);
+  var splitClosedMinesByFrontierNeighborhood = ({
+    board,
+    frontier
+  }) => {
+    const frontierClosedNeighborsMap = {};
+    frontier.forEach((cell) => getCellNeighbors({ board, cell }).forEach((neighbor) => {
+      if (neighbor.status === "closed") {
+        if (!frontierClosedNeighborsMap[neighbor.rowIndex]) {
+          frontierClosedNeighborsMap[neighbor.rowIndex] = {};
+        }
+        frontierClosedNeighborsMap[neighbor.rowIndex][neighbor.columnIndex] = neighbor;
+      }
+    }));
+    const frontierNeighbors = [];
+    const nonFrontierNeighbors = [];
+    board.cells.forEach((row, rowIndex) => row.forEach((cell, columnIndex) => {
+      var _a;
+      if (cell.status === "closed") {
+        if ((_a = frontierClosedNeighborsMap[rowIndex]) == null ? void 0 : _a[columnIndex]) {
+          frontierNeighbors.push(cell);
+        } else {
+          nonFrontierNeighbors.push(cell);
+        }
+      }
+    }));
+    return { frontierNeighbors, nonFrontierNeighbors };
+  };
 
   // src/solver/solver_random_choice_functions.ts
   var getRandomChoice = (board) => {
@@ -100,7 +127,7 @@
         possibleFlagSteps.push({
           around: cell,
           cells: closedNeighbors,
-          isPartition: false,
+          reason: "singleCell",
           type: "flag"
         });
       }
@@ -108,7 +135,6 @@
         possibleClearSteps.push({
           around: cell,
           cells: closedNeighbors,
-          isPartition: false,
           type: "clearNeighbors"
         });
       }
@@ -159,27 +185,35 @@
               if (cellMinusNeighborCells.length > 0) {
                 const numMinesInCellMinusNeighborPartition = cellPartition.numMines - minMinesInIntersection;
                 if (numMinesInCellMinusNeighborPartition === cellMinusNeighborCells.length || numMinesInCellMinusNeighborPartition === 0) {
-                  return {
+                  const base = {
                     cells: cellMinusNeighborCells,
                     commonRegion: intersectionCells,
-                    isPartition: true,
                     restrictedCell: cell,
-                    restrictingCell: neighbor,
-                    type: numMinesInCellMinusNeighborPartition === 0 ? "open" : "flag"
+                    restrictingCell: neighbor
                   };
+                  return numMinesInCellMinusNeighborPartition === 0 ? __spreadProps(__spreadValues({}, base), {
+                    type: "open"
+                  }) : __spreadProps(__spreadValues({}, base), {
+                    reason: "partition",
+                    type: "flag"
+                  });
                 }
               }
               if (neighborMinusCellCells.length > 0) {
                 const numMinesInNeighborMinusCellPartition = neighborPartition.numMines - minMinesInIntersection;
                 if (numMinesInNeighborMinusCellPartition === neighborMinusCellCells.length || numMinesInNeighborMinusCellPartition === 0) {
-                  return {
+                  const base = {
                     cells: neighborMinusCellCells,
                     commonRegion: intersectionCells,
-                    isPartition: true,
                     restrictedCell: neighbor,
-                    restrictingCell: cell,
-                    type: numMinesInNeighborMinusCellPartition === 0 ? "open" : "flag"
+                    restrictingCell: cell
                   };
+                  return numMinesInNeighborMinusCellPartition === 0 ? __spreadProps(__spreadValues({}, base), {
+                    type: "open"
+                  }) : __spreadProps(__spreadValues({}, base), {
+                    reason: "partition",
+                    type: "flag"
+                  });
                 }
               }
             }
@@ -190,16 +224,154 @@
     return void 0;
   };
 
+  // src/common/board_cloning_functions.ts
+  var cloneCellsAround = ({
+    around,
+    cells,
+    radius
+  }) => cells.map((row, rowIndex) => {
+    if (rowIndex < around.rowIndex - radius || rowIndex > around.rowIndex + radius) {
+      return row;
+    } else {
+      return row.map((cell, colIndex) => {
+        if (colIndex < around.columnIndex - radius || colIndex > around.columnIndex + radius) {
+          return cell;
+        } else {
+          return __spreadValues({}, cell);
+        }
+      });
+    }
+  });
+
+  // src/solver/solve_number_of_mines_functions.ts
+  var trySolvingBasedOnNumberOfMines = ({
+    board,
+    frontier
+  }) => {
+    const { frontierNeighbors, nonFrontierNeighbors } = splitClosedMinesByFrontierNeighborhood({ board, frontier });
+    const solutions = solveMineLocations({
+      board,
+      frontier,
+      frontierNeighbors,
+      maxSolutions: 2,
+      nonFrontierNeighbors
+    });
+    if (solutions.length !== 1) {
+      return void 0;
+    }
+    let solutionToUse = solutions[0];
+    if (solutionToUse.length + nonFrontierNeighbors.length === board.numFlagsLeft) {
+      solutionToUse = [...solutionToUse, ...nonFrontierNeighbors];
+    }
+    return {
+      cells: solutionToUse,
+      numberOfMines: board.numFlagsLeft,
+      reason: "numberOfMines",
+      type: "flag"
+    };
+  };
+  var solveMineLocations = ({
+    board,
+    frontier,
+    frontierNeighbors,
+    maxSolutions,
+    nonFrontierNeighbors
+  }) => {
+    if (frontierNeighbors.length + nonFrontierNeighbors.length < board.numFlagsLeft) {
+      return [];
+    }
+    if (board.numFlagsLeft === 0 || frontierNeighbors.length === 0) {
+      if (checkCellListMineOffset({ board, cells: frontier }).every((entry) => entry === 0)) {
+        return [[]];
+      } else {
+        return [];
+      }
+    }
+    const solutions = [];
+    const frontierNeighborCell = frontierNeighbors[0];
+    const solutionsWithoutMineInCurrentCell = solveMineLocations({
+      board,
+      frontier,
+      frontierNeighbors: frontierNeighbors.slice(1),
+      maxSolutions: maxSolutions - solutions.length,
+      nonFrontierNeighbors
+    });
+    solutionsWithoutMineInCurrentCell.forEach((solution) => {
+      solutions.push(solution);
+    });
+    if (solutions.length < maxSolutions && board.numFlagsLeft > 0) {
+      const clonedBoardCells = cloneCellsAround({
+        around: frontierNeighborCell,
+        cells: board.cells,
+        radius: 0
+      });
+      clonedBoardCells[frontierNeighborCell.rowIndex][frontierNeighborCell.columnIndex].status = "flagged";
+      const clonedBoard = __spreadProps(__spreadValues({}, board), {
+        cells: clonedBoardCells,
+        numFlagsLeft: board.numFlagsLeft - 1
+      });
+      const neighbors = getCellNeighbors({
+        board: clonedBoard,
+        cell: frontierNeighborCell
+      });
+      let someNeighborHasTooManyMinedNeighbors = false;
+      neighbors.forEach((neighbor) => {
+        if (neighbor.status === "open" && checkCellMineOffset({
+          board: clonedBoard,
+          cell: neighbor
+        }) > 0) {
+          someNeighborHasTooManyMinedNeighbors = true;
+        }
+      });
+      if (!someNeighborHasTooManyMinedNeighbors) {
+        solveMineLocations({
+          board: clonedBoard,
+          frontier,
+          frontierNeighbors: frontierNeighbors.slice(1),
+          maxSolutions: maxSolutions - solutions.length,
+          nonFrontierNeighbors
+        }).forEach((solution) => {
+          solutions.push([frontierNeighborCell, ...solution]);
+        });
+      }
+    }
+    return solutions;
+  };
+  var checkCellListMineOffset = ({
+    board,
+    cells
+  }) => cells.map((cell) => checkCellMineOffset({ board, cell }));
+  var checkCellMineOffset = ({
+    board,
+    cell
+  }) => {
+    const neighbors = getCellNeighbors({
+      board,
+      cell
+    });
+    const actualNumNeighborsWithMines = neighbors.filter((neighbor) => neighbor.status === "flagged").length;
+    return actualNumNeighborsWithMines - cell.numNeighborsWithMines;
+  };
+
   // src/solver/solver_logic_functions.ts
   var processStep = (board) => {
     const frontier = getFrontier(board);
-    const solveCellStep = trySolvingSomeCell({ board, frontier });
-    if (solveCellStep) {
-      return solveCellStep;
-    }
-    const solvePartitionStep = trySolvingSomePartition({ board, frontier });
-    if (solvePartitionStep) {
-      return solvePartitionStep;
+    if (frontier.length > 0) {
+      const solveCellStep = trySolvingSomeCell({ board, frontier });
+      if (solveCellStep) {
+        return solveCellStep;
+      }
+      const solvePartitionStep = trySolvingSomePartition({ board, frontier });
+      if (solvePartitionStep) {
+        return solvePartitionStep;
+      }
+      const solveNumberOfMinesStep = trySolvingBasedOnNumberOfMines({
+        board,
+        frontier
+      });
+      if (solveNumberOfMinesStep) {
+        return solveNumberOfMinesStep;
+      }
     }
     const randomChoice = getRandomChoice(board);
     if (randomChoice.cells.length > 0) {

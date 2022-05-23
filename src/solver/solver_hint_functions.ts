@@ -7,13 +7,18 @@ export const getHintText = (hint: SolverStep): string => {
       "so it's safe to clear all its unflagged neighbors."
     );
   } else if (hint.type === "flag") {
-    if (hint.isPartition) {
+    if (hint.reason === "partition") {
       return (
         `Cell ${cellToString(hint.restrictingCell)} ensures that there are ${
           hint.cells.length
         } ` +
-        `mine(s) in {${hint.commonRegion.map(cellToString).join(" + ")}}, so ` +
-        `there must be mines in {${hint.cells.map(cellToString).join(" + ")}}.`
+        `mine(s) in {${hint.commonRegion.map(cellToString).join(", ")}}, so ` +
+        `there must be mines in {${hint.cells.map(cellToString).join(", ")}}.`
+      );
+    } else if (hint.reason === "numberOfMines") {
+      return (
+        `Since there are ${hint.numberOfMines} mines left, there must be ` +
+        `mines in {${hint.cells.map(cellToString).join(", ")}}.`
       );
     } else {
       return "All of the remaining neighbors of the highlighted cell must contain a mine.";
@@ -48,22 +53,24 @@ export const getHintText = (hint: SolverStep): string => {
 const cellToString = (cell: GameCellWithoutMineInfo): string =>
   `[${cell.rowIndex + 1}, ${cell.columnIndex + 1}]`;
 
-export const getCellToHighlight = (
+export const getCellsToHighlight = (
   hint: SolverStep
-): GameCellWithoutMineInfo | undefined => {
+): GameCellWithoutMineInfo[] => {
   if (hint.type === "clearNeighbors") {
-    return hint.around;
+    return [hint.around];
   } else if (hint.type === "flag") {
-    if (hint.isPartition) {
-      return hint.restrictedCell;
+    if (hint.reason === "partition") {
+      return [hint.restrictedCell];
+    } else if (hint.reason === "singleCell") {
+      return [hint.around];
     } else {
-      return hint.around;
+      return hint.cells;
     }
   } else if (hint.type === "open") {
-    return hint.restrictedCell;
+    return [hint.restrictedCell];
   } else if (hint.type === "random") {
-    return hint.cells[0];
+    return [hint.cells[0]];
   } else {
-    return undefined;
+    return [];
   }
 };

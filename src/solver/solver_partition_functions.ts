@@ -117,17 +117,22 @@ export const trySolvingSomePartition = ({
                   cellMinusNeighborCells.length ||
                 numMinesInCellMinusNeighborPartition === 0
               ) {
-                return {
+                const base = {
                   cells: cellMinusNeighborCells,
                   commonRegion: intersectionCells,
-                  isPartition: true,
                   restrictedCell: cell,
                   restrictingCell: neighbor,
-                  type:
-                    numMinesInCellMinusNeighborPartition === 0
-                      ? "open"
-                      : "flag",
                 };
+                return numMinesInCellMinusNeighborPartition === 0
+                  ? {
+                      ...base,
+                      type: "open",
+                    }
+                  : {
+                      ...base,
+                      reason: "partition",
+                      type: "flag",
+                    };
               }
             }
 
@@ -139,17 +144,22 @@ export const trySolvingSomePartition = ({
                   neighborMinusCellCells.length ||
                 numMinesInNeighborMinusCellPartition === 0
               ) {
-                return {
+                const base = {
                   cells: neighborMinusCellCells,
                   commonRegion: intersectionCells,
-                  isPartition: true,
                   restrictedCell: neighbor,
                   restrictingCell: cell,
-                  type:
-                    numMinesInNeighborMinusCellPartition === 0
-                      ? "open"
-                      : "flag",
                 };
+                return numMinesInNeighborMinusCellPartition === 0
+                  ? {
+                      ...base,
+                      type: "open",
+                    }
+                  : {
+                      ...base,
+                      reason: "partition",
+                      type: "flag",
+                    };
               }
             }
           }
