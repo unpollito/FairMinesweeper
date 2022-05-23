@@ -35,7 +35,7 @@ export const Minesweeper = (): React.ReactElement => {
 
   return (
     <div className={"minesweeper"}>
-      <h1 className={"minesweeper__title"}>react-minesweeper</h1>
+      <h1 className={"minesweeper__title"}>Minesweeper, but fair</h1>
       <div className={"minesweeper__game"}>
         {state.matches("idle") ||
         state.matches("won") ||
@@ -97,6 +97,14 @@ export const Minesweeper = (): React.ReactElement => {
             />
           </>
         )}
+      </div>
+      <div className="footer">
+        <p className="footer__text">
+          Made with ❤ by&nbsp;
+          <a className="footer__text__link" href="https://github.com/unpollito">
+            unpollito
+          </a>
+        </p>
       </div>
     </div>
   );

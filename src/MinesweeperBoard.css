@@ -1,15 +1,22 @@
-.board__row {
-    display: flex;
+.board__column-indicators__entry {
+    color: #666;
+    font-size: 12px;
+    text-align: center;
 }
 
 .board__row__cell {
-    width: 1.2em;
-    height: 1.2em;
-    margin: 0.06em;
+    width: 20px;
+    height: 20px;
+    margin: 1px;
+    font-size: 15px;
     border: 0.12em #999 outset;
     background-color: #bbb;
     font-weight: bolder;
     text-align: center;
+}
+
+.board__row__cell--has-icon {
+    font-size: 13px;
 }
 
 .board__row__cell--closed {

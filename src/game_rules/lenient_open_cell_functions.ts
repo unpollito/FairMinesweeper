@@ -32,7 +32,6 @@ export const lenientOpenCell = ({
   if (!cell.hasMine || status !== "playing") {
     return openCell({ board, cell, status });
   }
-  console.log(JSON.stringify(board));
   const previousSolverStep = processStep(board);
   if (previousSolverStep.type !== "random") {
     return openCell({ board, cell, status });

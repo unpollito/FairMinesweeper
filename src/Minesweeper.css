@@ -6,7 +6,8 @@
 
 .minesweeper__title {
     text-align: center;
-    margin: 1em;
+    margin-top: 1em;
+    margin-bottom: 0.25em;
 }
 
 .minesweeper__game {
@@ -70,4 +71,18 @@
 
 .minesweeper__game__footer__right--too-many-cells {
     color: #f84;
+}
+
+.footer {
+    flex: 0;
+}
+
+.footer__text {
+    text-align: center;
+    font-size: 12px;
+    color: #666;
+}
+
+.footer__text__link {
+    color: #468;
 }
