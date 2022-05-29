@@ -118,8 +118,6 @@ export const gameStateMachine = createMachine<
   },
   {
     actions: {
-      // Need to put up with this or else I get compilation errors because XState's types
-      // are brittle.
       flagCell: assign((context, event) => {
         if (event.type !== "FLAG") {
           throw new Error("tried to flagCell with wrong event type");
@@ -139,6 +137,8 @@ export const gameStateMachine = createMachine<
           triedFlaggingTooManyCells: false,
         };
       }),
+      // Need to put up with this or else I get compilation errors because XState's types
+      // are brittle.
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       setEndTime: assign((_) => ({ endTime: Date.now() })),
       setHint: assign((context) => ({
