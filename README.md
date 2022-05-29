@@ -1,5 +1,7 @@
 # FairMinesweeper
 
+![Short demo of the game](demo.gif)
+
 Tired of losing Minesweeper games on 50-50 random guesses? Suffer no more!
 
 This is a Minesweeper implementation on React, with a very cool feature: whenever you
