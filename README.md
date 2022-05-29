@@ -14,3 +14,11 @@ why this is the case.
 To do both of the above, I've implemented a Minesweeper solver that "looks" at a
 Minesweeper board and figures out which is the next move you could make. If you want
 to look at the details, check [SOLVER.md](./SOLVER.md).
+
+## Installation and running
+
+Requires Node (I recommend version 16). `yarn` is recommended, but not needed.
+
+1. Install dependencies: run `yarn install` or `npm install`.
+2. Run the app: `yarn start` or `npm start`.
+3. Run unit tests: `yarn test` or `npm run test`.
