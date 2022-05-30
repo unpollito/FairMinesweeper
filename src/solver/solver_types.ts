@@ -23,7 +23,7 @@ export interface GameBoardWithoutMineInfo extends Omit<GameBoard, "cells"> {
   cells: GameCellWithoutMineInfo[][];
 }
 
-export type RandomChoice = "corner" | "edge" | "middle";
+export type RandomChoice = "corner" | "edge" | "middle" | "remaining";
 
 export type SolverStep =
   | { cells: GameCellWithoutMineInfo[]; choice: RandomChoice; type: "random" }

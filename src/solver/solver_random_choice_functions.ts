@@ -26,7 +26,14 @@ export const getRandomChoice = (
   }
   const choosableMiddleCells =
     getBoardMiddleCells(board).filter(filterChoosableCells);
-  return { cells: choosableMiddleCells, choice: "middle" };
+  if (choosableMiddleCells.length) {
+    return { cells: choosableMiddleCells, choice: "middle" };
+  }
+  const remainingCells = board.cells.reduce((a, b) => [...a, ...b], []);
+  const availableCells = remainingCells.filter(
+    (cell) => cell.status === "closed"
+  );
+  return { cells: availableCells, choice: "remaining" };
 };
 
 const canChooseRandomCell = ({
